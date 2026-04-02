@@ -1,0 +1,51 @@
+dn_id,status_update,updated_by,update_date
+1,DN not issuing,FOEU,2026-03-16
+1,FOEU not issuing package,FOEU,2026-03-26
+2,DN not issuing,FOEU,2026-03-13
+2,FOEU not issuing package,FOEU,2026-03-18
+3,FOEU not issuing package,FOEU,2026-02-13
+3,Under RFI,Inspection,2026-02-17
+4,DN not issuing,FOEU,2026-03-08
+4,FOEU not issuing package,FOEU,2026-03-13
+5,DN not issuing,FOEU,2026-03-14
+5,DN not issuing,FOEU,2026-03-19
+6,Depressurizing,Field Operations,2026-03-04
+6,Execution started,Maintenance Planner (CRD),2026-03-14
+7,Execution started,Maintenance Planner (CRD),2026-02-18
+7,Completed 40%,Maintenance Planner (CRD),2026-02-23
+8,Depressurizing,Field Operations,2026-03-16
+8,Execution started,Maintenance (CFC),2026-03-24
+9,Execution started,Maintenance (CFC),2026-03-19
+9,Completed 40%,Maintenance (CFC),2026-03-23
+10,Execution started,Maintenance Planner (CRD),2026-02-21
+10,Completed 40%,Maintenance Planner (CRD),2026-02-25
+11,Execution started,Maintenance Planner (CRD),2026-03-16
+11,Completed 40%,Maintenance Planner (CRD),2026-03-19
+12,Execution started,Maintenance Planner (CRD),2026-02-05
+12,Completed 40%,Maintenance Planner (CRD),2026-02-07
+13,DN not issuing,FOEU,2026-03-13
+13,FOEU not issuing package,FOEU,2026-03-24
+14,Completed 40%,Maintenance (CFC),2026-03-23
+14,Closed,Inspection,2026-03-29
+15,Execution started,Maintenance (CFC),2026-02-27
+15,Completed 40%,Maintenance (CFC),2026-03-03
+16,Depressurizing,Field Operations,2026-02-07
+16,Execution started,Maintenance (CFC),2026-02-11
+17,Completed 40%,Maintenance Planner (CRD),2026-02-19
+17,Closed,Inspection,2026-02-22
+18,Execution started,Field Operations,2026-02-16
+18,Completed 40%,Field Operations,2026-02-18
+19,Execution started,Maintenance Planner (CRD),2026-03-23
+19,Completed 40%,Maintenance Planner (CRD),2026-03-30
+20,Execution started,Maintenance (CFC),2026-02-26
+20,Completed 40%,Maintenance (CFC),2026-03-05
+21,DN not issuing,FOEU,2026-02-23
+21,DN not issuing,FOEU,2026-03-01
+22,Under RFI,Inspection,2026-02-18
+22,Depressurizing,Field Operations,2026-02-23
+23,Execution started,Maintenance Planner (CRD),2026-02-25
+23,Completed 40%,Maintenance Planner (CRD),2026-03-04
+24,Under RFI,Inspection,2026-02-25
+24,Depressurizing,Field Operations,2026-03-04
+25,Execution started,Maintenance Planner (CRD),2026-02-10
+25,Completed 40%,Maintenance Planner (CRD),2026-02-13
