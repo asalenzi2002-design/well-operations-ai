@@ -3,7 +3,7 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const { mockProductionRecords } = require("./dashboardEngine");
-
+const CoreEngine = require("./src/core");
 const app = express();
 app.use(express.json());
 
@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3002;
 let dnMaster = [];
 let wells = [];
 let dnLogs = [];
-
+let coreEngine = null;
 const productionHistory = [
   { timestamp: "2026-04-02T00:00:00Z", bopd: 980 },
   { timestamp: "2026-04-02T01:00:00Z", bopd: 1020 },
@@ -174,9 +174,9 @@ function parseCSV(filePath) {
    LOAD DATA
 ========================= */
 function loadData() {
-  const wellsPath = path.join(__dirname, "wells.csv");
-  const dnLogsPath = path.join(__dirname, "dn_logs.csv");
-  const dnMasterPath = path.join(__dirname, "dn_master.csv");
+const wellsPath = path.join(__dirname, "data", "wells.csv");
+const dnLogsPath = path.join(__dirname, "data", "dn_logs.csv");
+const dnMasterPath = path.join(__dirname, "data", "dn_master.csv");
 
   wells = parseCSV(wellsPath);
   dnLogs = parseCSV(dnLogsPath);
@@ -641,8 +641,6 @@ app.post("/ask", (req, res) => {
 ========================= */
 app.get("/dashboard/summary", (req, res) => {
   try {
-    console.log("productionHistory:", productionHistory);
-
     const totalRate = calculateTotalRate(wells);
     const hourlyAverage = calculateHourlyAverage(productionHistory);
     const dailyAverage = calculateDailyAverage(productionHistory);
@@ -833,7 +831,16 @@ app.get("/dashboard/overview", (req, res) => {
    START
 ========================= */
 loadData();
-
+function initializeCoreEngineData() {
+  try {
+    coreEngine = CoreEngine.initializeCoreEngine(wells, dnLogs, dnMaster);
+    if (!coreEngine) {
+      console.warn("[CoreEngine] Initialization returned null, advanced features disabled");
+    }
+  } catch (error) {
+    console.error("[CoreEngine] Failed to initialize:", error);
+  }
+}
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
