@@ -1,0 +1,26 @@
+dn_id,well_id,dn_type,dn_type_id,type_group,priority,created_date,progress_percent
+1,28,Instrument Failure,5,CFC,High,2026-03-09,60
+2,39,Instrument Failure,5,CFC,High,2026-03-09,23
+3,35,Flowline Corrosion,3,CRD,Low,2026-02-10,41
+4,84,Sand Encroachment,1,CFC,High,2026-03-03,21
+5,46,Pinhole Leak,2,CRD,Low,2026-03-09,58
+6,109,Pinhole Leak,2,CRD,Low,2026-02-25,41
+7,69,Valve Failure,4,CRD,High,2026-02-14,40
+8,106,Instrument Failure,5,CFC,Medium,2026-03-09,60
+9,69,Instrument Failure,5,CFC,Medium,2026-03-16,40
+10,110,Flowline Corrosion,3,CRD,High,2026-02-17,66
+11,50,Flowline Corrosion,3,CRD,Low,2026-03-13,40
+12,75,Tubing Issue,6,CRD,Low,2026-02-03,40
+13,50,Valve Failure,4,CRD,High,2026-03-06,39
+14,93,Instrument Failure,5,CFC,High,2026-03-18,100
+15,33,Instrument Failure,5,CFC,High,2026-02-24,40
+16,54,Instrument Failure,5,CFC,High,2026-02-03,19
+17,82,Flowline Corrosion,3,CRD,Low,2026-02-16,100
+18,3,Sand Encroachment,1,CFC,High,2026-02-15,40
+19,53,Tubing Issue,6,CRD,Medium,2026-03-16,40
+20,108,Instrument Failure,5,CFC,Low,2026-02-20,40
+21,27,Flowline Corrosion,3,CRD,Low,2026-02-18,60
+22,36,Pinhole Leak,2,CRD,Low,2026-02-13,53
+23,91,Tubing Issue,6,CRD,Low,2026-02-18,54
+24,104,Valve Failure,4,CRD,High,2026-02-18,40
+25,75,Flowline Corrosion,3,CRD,High,2026-02-08,40
