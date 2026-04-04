@@ -1,18 +1,9 @@
 require("dotenv").config();
-
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+const { mockProductionRecords } = require("./dashboardEngine");
 const CoreEngine = require("./src/core");
-const {
-  calculateWellRisk,
-  calculateDNRisk,
-  buildRiskDashboard
-} = require("./src/logic/riskEngine");
-const { buildSystemIntelligence } = require("./src/logic/intelligenceBuilders");
-const dashboardBuilders = require("./src/logic/dashboardBuilders");
-const { generateRecommendations } = require("./src/logic/recommendationEngine");
-
 const app = express();
 app.use(express.json());
 
@@ -22,12 +13,6 @@ let dnMaster = [];
 let wells = [];
 let dnLogs = [];
 let coreEngine = null;
-
-let normalizedWellsCache = null;
-let latestDNMapCache = null;
-let mergedLatestDNsCache = null;
-let latestDNsByWellCache = null;
-
 const productionHistory = [
   { timestamp: "2026-04-02T00:00:00Z", bopd: 980 },
   { timestamp: "2026-04-02T01:00:00Z", bopd: 1020 },
@@ -44,426 +29,41 @@ const productionHistory = [
 ];
 
 /* =========================
-   GENERAL HELPERS
-========================= */
-function toSafeString(value) {
-  return String(value ?? "").trim();
-}
-
-function toSafeLower(value) {
-  return toSafeString(value).toLowerCase();
-}
-
-function toNumber(value, fallback = 0) {
-  if (value === null || value === undefined) return fallback;
-
-  const cleaned = String(value).replace(/,/g, "").replace(/%/g, "").trim();
-  const parsed = Number(cleaned);
-
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function normalizeText(value) {
-  return String(value || "")
-    .toLowerCase()
-    .replace(/[_\s]+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-    .trim();
-}
-
-function invalidateDataCaches() {
-  normalizedWellsCache = null;
-  latestDNMapCache = null;
-  mergedLatestDNsCache = null;
-  latestDNsByWellCache = null;
-}
-
-function parseCSVLine(line) {
-  const cells = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i += 1) {
-    const char = line[i];
-    const nextChar = line[i + 1];
-
-    if (char === '"') {
-      if (inQuotes && nextChar === '"') {
-        current += '"';
-        i += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-      continue;
-    }
-
-    if (char === "," && !inQuotes) {
-      cells.push(current);
-      current = "";
-      continue;
-    }
-
-    current += char;
-  }
-
-  cells.push(current);
-  return cells;
-}
-
-function parseCSV(filePath) {
-  const raw = fs.readFileSync(filePath, "utf8");
-  if (!raw || !raw.trim()) return [];
-
-  const normalizedRaw = raw.replace(/^\uFEFF/, "");
-  const lines = [];
-  let currentLine = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < normalizedRaw.length; i += 1) {
-    const char = normalizedRaw[i];
-    const nextChar = normalizedRaw[i + 1];
-
-    currentLine += char;
-
-    if (char === '"') {
-      if (inQuotes && nextChar === '"') {
-        currentLine += nextChar;
-        i += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    }
-
-    if ((char === "\n" || char === "\r") && !inQuotes) {
-      if (char === "\r" && nextChar === "\n") {
-        i += 1;
-      }
-      const trimmedLine = currentLine.replace(/[\r\n]+$/, "");
-      if (trimmedLine.length > 0) {
-        lines.push(trimmedLine);
-      }
-      currentLine = "";
-    }
-  }
-
-  if (currentLine.trim().length > 0) {
-    lines.push(currentLine);
-  }
-
-  if (lines.length === 0) return [];
-
-  const headers = parseCSVLine(lines[0]).map((header) => toSafeString(header));
-
-  return lines.slice(1).map((line) => {
-    const values = parseCSVLine(line);
-    const row = {};
-
-    headers.forEach((header, index) => {
-      row[header] = values[index] !== undefined ? toSafeString(values[index]) : "";
-    });
-
-    return row;
-  });
-}
-
-function getCoreEngineDNMap(engine) {
-  if (!engine) return null;
-  if (engine.dnIndexById instanceof Map) return engine.dnIndexById;
-  if (engine.dnIndexByid instanceof Map) return engine.dnIndexByid;
-  if (engine.dnIndex instanceof Map) return engine.dnIndex;
-  return null;
-}
-
-/* =========================
-   WELL NORMALIZATION
-========================= */
-function extractFieldCode(wellName, fieldName) {
-  const name = toSafeString(wellName).toUpperCase();
-  const field = toSafeLower(fieldName);
-
-  if (name.startsWith("ANDR-")) return "ANDR";
-  if (name.startsWith("ABQQ-")) return "ABQQ";
-
-  if (field === "ain dar") return "ANDR";
-  if (field === "abqaiq") return "ABQQ";
-
-  return "";
-}
-
-function normalizeProductionStatus(status) {
-  const raw = toSafeString(status);
-  if (!raw) return "Unknown";
-
-  const normalized = toSafeLower(raw);
-
-  if (normalized === "on production") return "On Production";
-  if (normalized === "testing") return "Testing";
-  if (normalized === "standby") return "Standby";
-  if (normalized === "mothball" || normalized === "moth ball") return "Mothball";
-  if (normalized === "shut-in" || normalized === "shut in") return "Shut-in";
-  if (normalized.includes("locked")) return "Locked Potential";
-
-  return raw;
-}
-
-function normalizeOilRate(well) {
-  const raw =
-    well?.oil_rate_bopd ??
-    well?.oil_rate ??
-    well?.oilrate ??
-    well?.rate ??
-    0;
-
-  return toNumber(raw, 0);
-}
-
-function normalizeWell(well) {
-  const safeWell = well || {};
-  const wellName = toSafeString(safeWell.well_name || safeWell.name);
-  const productionStatus = normalizeProductionStatus(safeWell.production_status);
-  const oilRate = normalizeOilRate(safeWell);
-  const fieldCode = toSafeString(
-    safeWell.field_code || extractFieldCode(wellName, safeWell.field)
-  ).toUpperCase();
-
-  return {
-    ...safeWell,
-    well_id: toSafeString(safeWell.well_id || safeWell.id),
-    well_name: wellName,
-    field_code: fieldCode,
-    production_status: productionStatus,
-    oil_rate_bopd: oilRate,
-    is_active: toSafeLower(productionStatus) !== "shut-in",
-    last_updated: toSafeString(safeWell.last_updated)
-  };
-}
-
-function getNormalizedWells() {
-  if (normalizedWellsCache) {
-    return normalizedWellsCache;
-  }
-
-  normalizedWellsCache = Array.isArray(wells) ? wells.map(normalizeWell) : [];
-  return normalizedWellsCache;
-}
-
-/* =========================
-   DN NORMALIZATION
-========================= */
-function normalizeWorkflowStatus(statusText) {
-  const s = toSafeLower(statusText);
-
-  if (!s) return "Open";
-  if (s.includes("closed")) return "Closed";
-  if (s.includes("completed")) return "Completed";
-  if (s.includes("not issuing")) return "Waiting";
-  if (s.includes("under rfi")) return "In Progress";
-  if (s.includes("depressurizing")) return "In Progress";
-  if (s.includes("execution started")) return "In Progress";
-
-  return "In Progress";
-}
-
-function normalizeCurrentStep(statusText) {
-  const s = toSafeLower(statusText);
-
-  if (!s) return "Field Review";
-  if (s.includes("not issuing package")) return "Package Preparation";
-  if (s.includes("dn not issuing")) return "Package Preparation";
-  if (s.includes("not issuing")) return "Package Preparation";
-  if (s.includes("under rfi")) return "RFI";
-  if (s.includes("depressurizing")) return "Execution";
-  if (s.includes("execution started")) return "Execution";
-  if (s.includes("completed")) return "Execution";
-  if (s.includes("closed")) return "Closeout";
-
-  return "Field Review";
-}
-
-function normalizeProgressValue(progressValue) {
-  const parsed = toNumber(progressValue, 0);
-  if (parsed < 0) return 0;
-  if (parsed > 100) return 100;
-  return parsed;
-}
-
-function normalizeDN(item) {
-  const safeItem = item || {};
-
-  const latestStatus = toSafeString(
-    safeItem.dn_status ||
-      safeItem.status_update ||
-      safeItem.status ||
-      safeItem.latest_update
-  );
-
-  const workflowStatus = normalizeWorkflowStatus(latestStatus);
-  const progressPercent = normalizeProgressValue(
-    safeItem.progress_percent ?? safeItem.progress ?? 0
-  );
-
-  const ownerName = toSafeString(
-    safeItem.current_owner_name ||
-      safeItem.owner ||
-      safeItem.dn_owner ||
-      safeItem.updated_by
-  );
-
-  const progressString =
-    typeof safeItem.progress === "string" && toSafeString(safeItem.progress)
-      ? toSafeString(safeItem.progress)
-      : `${progressPercent}%`;
-
-  return {
-    ...safeItem,
-    dn_id: toSafeString(safeItem.dn_id),
-    well_id: toSafeString(safeItem.well_id),
-    dn_type: toSafeString(safeItem.dn_type || safeItem.type || "Unknown"),
-    priority: toSafeString(safeItem.priority || "Unknown"),
-    created_date: toSafeString(safeItem.created_date),
-    update_date: toSafeString(safeItem.update_date || safeItem.last_updated),
-    last_updated: toSafeString(safeItem.last_updated || safeItem.update_date),
-    dn_status: latestStatus || "Unknown",
-    status: latestStatus || "Unknown",
-    owner: ownerName || "Unknown",
-    dn_owner: ownerName || "Unknown",
-    current_owner_name: ownerName || "Unknown",
-    progress_percent: progressPercent,
-    progress: progressString,
-    workflow_status: workflowStatus,
-    current_step: normalizeCurrentStep(latestStatus),
-    is_closed: workflowStatus === "Closed"
-  };
-}
-
-function getLatestDNMap() {
-  if (latestDNMapCache) {
-    return latestDNMapCache;
-  }
-
-  const latestMap = new Map();
-
-  for (const row of Array.isArray(dnLogs) ? dnLogs : []) {
-    const dnId = toSafeString(row?.dn_id);
-    if (!dnId) continue;
-
-    const existing = latestMap.get(dnId);
-    if (!existing) {
-      latestMap.set(dnId, row);
-      continue;
-    }
-
-    const currentDate = new Date(row?.update_date || 0);
-    const savedDate = new Date(existing?.update_date || 0);
-
-    if (currentDate > savedDate) {
-      latestMap.set(dnId, row);
-    }
-  }
-
-  latestDNMapCache = latestMap;
-  return latestDNMapCache;
-}
-
-function getMergedLatestDNs() {
-  if (mergedLatestDNsCache) {
-    return mergedLatestDNsCache;
-  }
-
-  const latestLogMap = getLatestDNMap();
-
-  mergedLatestDNsCache = (Array.isArray(dnMaster) ? dnMaster : [])
-    .map((meta) => {
-      const dnId = toSafeString(meta?.dn_id);
-      if (!dnId) return null;
-
-      const latestLog = latestLogMap.get(dnId);
-
-      const merged = {
-        ...meta,
-        dn_id: dnId,
-        well_id: toSafeString(meta?.well_id),
-        dn_type: toSafeString(meta?.dn_type),
-        priority: toSafeString(meta?.priority),
-        created_date: toSafeString(meta?.created_date),
-        progress_percent: normalizeProgressValue(
-          meta?.progress_percent ?? meta?.progress ?? 0
-        ),
-        dn_status: toSafeString(latestLog?.status_update || meta?.status || ""),
-        status_update: toSafeString(latestLog?.status_update || ""),
-        update_date: toSafeString(latestLog?.update_date || meta?.update_date || ""),
-        last_updated: toSafeString(latestLog?.update_date || meta?.update_date || ""),
-        dn_owner: toSafeString(latestLog?.updated_by || meta?.owner || ""),
-        owner: toSafeString(latestLog?.updated_by || meta?.owner || ""),
-        current_owner_name: toSafeString(latestLog?.updated_by || meta?.owner || "")
-      };
-
-      return normalizeDN(merged);
-    })
-    .filter(Boolean);
-
-  return mergedLatestDNsCache;
-}
-
-function getLatestDNsByWellMap() {
-  if (latestDNsByWellCache) {
-    return latestDNsByWellCache;
-  }
-
-  const byWell = new Map();
-
-  for (const dn of getMergedLatestDNs()) {
-    const wellId = toSafeString(dn?.well_id);
-    if (!wellId) continue;
-
-    if (!byWell.has(wellId)) {
-      byWell.set(wellId, []);
-    }
-
-    byWell.get(wellId).push(dn);
-  }
-
-  latestDNsByWellCache = byWell;
-  return latestDNsByWellCache;
-}
-
-function getLatestDNsForWell(wellId) {
-  const targetWellId = toSafeString(wellId);
-  if (!targetWellId) return [];
-
-  const byWell = getLatestDNsByWellMap();
-  return byWell.get(targetWellId) || [];
-}
-
-/* =========================
    PRODUCTION HELPERS
 ========================= */
 function calculateTotalRate(wellsData) {
-  return (Array.isArray(wellsData) ? wellsData : [])
-    .map(normalizeWell)
+  return wellsData
     .filter((well) => {
-      const status = toSafeLower(well.production_status);
+      const status = String(well.production_status || "").toLowerCase();
       return status === "on production" || status === "testing";
     })
-    .reduce((sum, well) => sum + toNumber(well.oil_rate_bopd, 0), 0);
+    .reduce((sum, well) => {
+      const rate = Number(well.oil_rate_bopd || 0);
+      return sum + (Number.isFinite(rate) ? rate : 0);
+    }, 0);
 }
 
 function calculateHourlyAverage(history) {
   if (!Array.isArray(history) || history.length === 0) return 0;
 
   const latest = history[history.length - 1];
-  return toNumber(latest?.bopd, 0);
+  const value = Number(latest && latest.bopd ? latest.bopd : 0);
+  return Number.isFinite(value) ? value : 0;
 }
 
 function calculateDailyAverage(history) {
   if (!Array.isArray(history) || history.length === 0) return 0;
 
-  const total = history.reduce((sum, item) => sum + toNumber(item?.bopd, 0), 0);
+  const total = history.reduce((sum, item) => {
+    const value = Number(item && item.bopd ? item.bopd : 0);
+    return sum + (Number.isFinite(value) ? value : 0);
+  }, 0);
+
   return Math.round(total / history.length);
 }
 
-function calculateProductionDrop(history) {
-  if (!Array.isArray(history) || history.length < 2) {
+function calculateProductionDrop(productionHistory) {
+  if (!productionHistory || productionHistory.length < 2) {
     return {
       latest: 0,
       previous: 0,
@@ -473,14 +73,18 @@ function calculateProductionDrop(history) {
     };
   }
 
-  const sorted = [...history].sort(
+  const sorted = [...productionHistory].sort(
     (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
   );
 
-  const latest = toNumber(sorted[0]?.bopd, 0);
-  const previous = toNumber(sorted[1]?.bopd, 0);
+  // IMPORTANT:
+  // your data uses "bopd", not "rate"
+  const latest = Number(sorted[0].bopd || 0);
+  const previous = Number(sorted[1].bopd || 0);
+
   const delta = latest - previous;
-  const percent = previous > 0 ? Number(((delta / previous) * 100).toFixed(1)) : 0;
+  const percent =
+    previous > 0 ? Number(((delta / previous) * 100).toFixed(1)) : 0;
 
   let direction = "stable";
   if (delta > 0) direction = "up";
@@ -495,27 +99,32 @@ function calculateProductionDrop(history) {
   };
 }
 
-function calculateDNImpact(normalizedWells, latestDNsByWell) {
-  const wellsList = Array.isArray(normalizedWells) ? normalizedWells : [];
-  const dnByWell = latestDNsByWell instanceof Map ? latestDNsByWell : new Map();
-
+function calculateDNImpact(wells) {
   let lostProduction = 0;
   let affectedWells = 0;
 
-  for (const well of wellsList) {
-    const wellId = toSafeString(well?.well_id || well?.id);
-    const status = toSafeLower(well?.production_status);
-    const rate = toNumber(well?.oil_rate_bopd, 0);
-    const wellDNs = dnByWell.get(wellId) || [];
+  wells.forEach((w) => {
+    const nw = normalizeWell(w);
+    const rate = Number(nw.oil_rate_bopd) || 0;
+    const status = String(nw.production_status || "").toLowerCase();
 
-    const hasActiveDN = wellDNs.some((dn) => !dn.is_closed);
-    const isProducing = status === "on production" || status === "testing";
+    const dns = getLatestDNsForWell(nw.well_id || nw.id) || [];
+
+    const hasActiveDN = dns.some((dn) => {
+      const workflowStatus = normalizeWorkflowStatus(
+        dn.dn_status || dn.status || ""
+      );
+      return String(workflowStatus).toLowerCase().trim() !== "closed";
+    });
+
+    const isProducing =
+      status === "on production" || status === "testing";
 
     if (!isProducing && hasActiveDN) {
       lostProduction += rate;
-      affectedWells += 1;
+      affectedWells++;
     }
-  }
+  });
 
   return {
     lost_production: lostProduction,
@@ -523,14 +132,14 @@ function calculateDNImpact(normalizedWells, latestDNsByWell) {
   };
 }
 
-function getTopAndLowWells(normalizedWells) {
-  const producing = (Array.isArray(normalizedWells) ? normalizedWells : []).filter(
-    (w) => toSafeLower(w.production_status) === "on production"
-  );
+function getTopAndLowWells(wells) {
+  const producing = wells
+    .map(normalizeWell)
+    .filter(
+      (w) => String(w.production_status || "").toLowerCase() === "on production"
+    );
 
-  const sorted = [...producing].sort(
-    (a, b) => toNumber(b.oil_rate_bopd, 0) - toNumber(a.oil_rate_bopd, 0)
-  );
+  const sorted = producing.sort((a, b) => b.oil_rate_bopd - a.oil_rate_bopd);
 
   return {
     top: sorted.slice(0, 3),
@@ -539,18 +148,39 @@ function getTopAndLowWells(normalizedWells) {
 }
 
 /* =========================
-   DATA LOAD
+   CSV LOADER
+========================= */
+function parseCSV(filePath) {
+  const raw = fs.readFileSync(filePath, "utf8").trim();
+  const lines = raw.split(/\r?\n/);
+
+  if (lines.length === 0) return [];
+
+  const headers = lines[0].split(",").map((h) => h.trim());
+
+  return lines.slice(1).map((line) => {
+    const values = line.split(",").map((v) => v.trim());
+    const row = {};
+
+    headers.forEach((header, index) => {
+      row[header] = values[index] !== undefined ? values[index] : "";
+    });
+
+    return row;
+  });
+}
+
+/* =========================
+   LOAD DATA
 ========================= */
 function loadData() {
-  const wellsPath = path.join(__dirname, "data", "wells.csv");
-  const dnLogsPath = path.join(__dirname, "data", "dn_logs.csv");
-  const dnMasterPath = path.join(__dirname, "data", "dn_master.csv");
+const wellsPath = path.join(__dirname, "data", "wells.csv");
+const dnLogsPath = path.join(__dirname, "data", "dn_logs.csv");
+const dnMasterPath = path.join(__dirname, "data", "dn_master.csv");
 
   wells = parseCSV(wellsPath);
   dnLogs = parseCSV(dnLogsPath);
   dnMaster = parseCSV(dnMasterPath);
-
-  invalidateDataCaches();
 
   console.log("Data loaded successfully");
   console.log(`Wells loaded: ${wells.length}`);
@@ -559,11 +189,122 @@ function loadData() {
 }
 
 /* =========================
-   FIND WELL / INTENT
+   HELPERS
 ========================= */
+function normalizeText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[_\s]+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .trim();
+}
+
+function extractFieldCode(wellName) {
+  const name = String(wellName || "").toUpperCase().trim();
+
+  if (name.startsWith("ANDR-")) return "ANDR";
+  if (name.startsWith("ABQQ-")) return "ABQQ";
+
+  return "";
+}
+
+function normalizeProductionStatus(status) {
+  const value = String(status || "").trim();
+  if (!value) return "Unknown";
+  return value;
+}
+
+function normalizeOilRate(well) {
+  const raw =
+    well.oil_rate_bopd ??
+    well.oil_rate ??
+    well.oilrate ??
+    well.rate ??
+    0;
+
+  const num = Number(raw);
+  return Number.isFinite(num) ? num : 0;
+}
+
+function normalizeWell(well) {
+  const wellName = String(well.well_name || well.name || "").trim();
+  const productionStatus = normalizeProductionStatus(well.production_status);
+  const oilRate = normalizeOilRate(well);
+
+  let fieldCode = well.field_code || extractFieldCode(wellName);
+
+  if (!fieldCode) {
+    const fieldName = String(well.field || "").toLowerCase().trim();
+
+    if (fieldName === "ain dar") fieldCode = "ANDR";
+    if (fieldName === "abqaiq") fieldCode = "ABQQ";
+  }
+
+  return {
+    ...well,
+    well_id: well.well_id || well.id || "",
+    well_name: wellName,
+    field_code: fieldCode,
+    production_status: productionStatus,
+    oil_rate_bopd: oilRate,
+    is_active: productionStatus.toLowerCase() !== "shut-in",
+    last_updated: well.last_updated || ""
+  };
+}
+
+function normalizeWorkflowStatus(statusText) {
+  const s = String(statusText || "").toLowerCase().trim();
+
+  if (!s) return "Open";
+  if (s.includes("closed")) return "Closed";
+  if (s.includes("completed")) return "Completed";
+  if (s.includes("not issuing")) return "Waiting";
+  if (s.includes("under rfi")) return "In Progress";
+  if (s.includes("depressurizing")) return "In Progress";
+
+  return "In Progress";
+}
+
+function normalizeCurrentStep(statusText) {
+  const s = String(statusText || "").toLowerCase().trim();
+
+  if (s.includes("not issuing package")) return "Package Preparation";
+  if (s.includes("dn not issuing")) return "Package Preparation";
+  if (s.includes("not issuing")) return "Package Preparation";
+  if (s.includes("under rfi")) return "RFI";
+  if (s.includes("depressurizing")) return "Execution";
+  if (s.includes("completed")) return "Execution";
+
+  return "Field Review";
+}
+
+function normalizeDN(item) {
+  const safeItem = item || {};
+  const latestUpdate = String(
+    safeItem.status || safeItem.latest_update || ""
+  ).trim();
+
+  const rawProgress =
+    safeItem.progress_percent ??
+    safeItem.progress ??
+    "0";
+
+  const progressPercent = Number(
+    String(rawProgress).replace("%", "").trim()
+  );
+
+  return {
+    ...safeItem,
+    workflow_status: normalizeWorkflowStatus(latestUpdate),
+    current_step: normalizeCurrentStep(latestUpdate),
+    current_owner_name: safeItem.owner || safeItem.current_owner_name || "",
+    progress_percent: Number.isFinite(progressPercent) ? progressPercent : 0,
+    is_closed: normalizeWorkflowStatus(latestUpdate) === "Closed"
+  };
+}
+
 function findWell(question) {
-  const q = toSafeLower(question);
-  const normalizedWells = getNormalizedWells();
+  const q = String(question || "").toLowerCase();
 
   const match = q.match(
     /\b(?:well[-\s]?(\d+)|((?:andr|abqq)[-\s]?\d{3,4}))\b/i
@@ -576,11 +317,12 @@ function findWell(question) {
     if (fullCode) {
       const normalizedTarget = normalizeText(fullCode.replace(/\s+/g, "-"));
 
-      const found = normalizedWells.find((w) => {
-        return normalizeText(w.well_name) === normalizedTarget;
+      const found = wells.find((w) => {
+        const nw = normalizeWell(w);
+        return normalizeText(nw.well_name) === normalizedTarget;
       });
 
-      if (found) return found;
+      if (found) return normalizeWell(found);
     }
 
     if (numericPart) {
@@ -592,32 +334,83 @@ function findWell(question) {
         `abqq-${numericPart}`
       ];
 
-      const found = normalizedWells.find((w) => {
-        const wellName = normalizeText(w.well_name);
+      const found = wells.find((w) => {
+        const nw = normalizeWell(w);
+        const wellName = normalizeText(nw.well_name || "");
         return candidates.some(
           (candidate) => wellName === normalizeText(candidate)
         );
       });
 
-      if (found) return found;
+      if (found) return normalizeWell(found);
     }
   }
 
   const normalizedQuestion = normalizeText(q);
 
-  const directFound = normalizedWells.find((w) => {
-    const wellName = normalizeText(w.well_name);
+  const directFound = wells.find((w) => {
+    const nw = normalizeWell(w);
+    const wellName = normalizeText(nw.well_name || "");
     return (
-      normalizedQuestion.includes(wellName) ||
-      wellName.includes(normalizedQuestion)
+      normalizedQuestion.includes(wellName) || wellName.includes(normalizedQuestion)
     );
   });
 
-  return directFound || null;
+  return directFound ? normalizeWell(directFound) : null;
+}
+
+/* =========================
+   PRESERVE EXISTING DN LOGIC
+   latest by dn_id using update_date
+========================= */
+function getLatestDNsForWell(wellId) {
+  const latestMap = {};
+
+  for (const row of dnLogs) {
+    const dnId = row.dn_id;
+    if (!dnId) continue;
+
+    if (!latestMap[dnId]) {
+      latestMap[dnId] = row;
+      continue;
+    }
+
+    const currentDate = new Date(row.update_date || 0);
+    const savedDate = new Date(latestMap[dnId].update_date || 0);
+
+    if (currentDate > savedDate) {
+      latestMap[dnId] = row;
+    }
+  }
+
+  const latestLogs = Object.values(latestMap);
+
+  const merged = latestLogs
+    .map((log) => {
+      const meta = dnMaster.find((d) => String(d.dn_id) === String(log.dn_id));
+      if (!meta) return null;
+
+      return {
+        dn_id: meta.dn_id,
+        well_id: meta.well_id,
+        dn_type: meta.dn_type,
+        progress_percent: meta.progress_percent,
+        priority: meta.priority,
+        created_date: meta.created_date,
+        dn_status: log.status_update,
+        dn_owner: log.updated_by,
+        update_date: log.update_date
+      };
+    })
+    .filter(Boolean);
+
+  return merged.filter(
+    (dn) => String(dn.well_id).trim() === String(wellId).trim()
+  );
 }
 
 function detectIntent(question) {
-  const q = toSafeLower(question);
+  const q = String(question || "").toLowerCase();
 
   if (
     q.includes("status") ||
@@ -689,13 +482,19 @@ function detectIntent(question) {
 /* =========================
    ROUTE HELPERS
 ========================= */
-function formatIssueForAsk(dn) {
-  const normalized = normalizeDN(dn);
+function formatIssues(latestDNs) {
+  if (!Array.isArray(latestDNs)) return [];
 
-  return {
-    ...normalized,
-    type: normalized.dn_type || "Unknown"
-  };
+  return latestDNs.map((dn) => ({
+    dn_id: dn.dn_id || "",
+    type: dn.dn_type || dn.type || "Unknown",
+    status: dn.dn_status || dn.status || "Unknown",
+    owner: dn.dn_owner || dn.owner || "Unknown",
+    progress: dn.progress_percent ? `${dn.progress_percent}%` : "0%",
+    priority: dn.priority || "Unknown",
+    created_date: dn.created_date || "",
+    last_updated: dn.last_updated || dn.update_date || ""
+  }));
 }
 
 /* =========================
@@ -703,21 +502,31 @@ function formatIssueForAsk(dn) {
 ========================= */
 app.post("/ask", (req, res) => {
   try {
-    const question = toSafeString(req.body?.question);
+    const question = req.body.question || "";
 
-    if (!question) {
+    if (!question.trim()) {
       return res.status(400).json({ error: "Question is required" });
     }
 
-    const normalizedWell = findWell(question);
+    const well = findWell(question);
+    console.log("WELL FOUND:", well);
 
-    if (!normalizedWell) {
+    if (!well) {
       return res.json({ message: "Well not found" });
     }
 
+    const normalizedWell = normalizeWell(well);
     const intent = detectIntent(question);
-    const latestDNs = getLatestDNsForWell(normalizedWell.well_id || normalizedWell.id);
-    const normalizedIssues = latestDNs.map(formatIssueForAsk);
+
+    const latestDNs = getLatestDNsForWell(
+      normalizedWell.well_id || normalizedWell.id
+    );
+
+    const issues = Array.isArray(formatIssues(latestDNs))
+      ? formatIssues(latestDNs)
+      : [];
+
+    const normalizedIssues = issues.filter(Boolean).map((item) => normalizeDN(item));
 
     if (intent === "summary") {
       return res.json({
@@ -832,12 +641,11 @@ app.post("/ask", (req, res) => {
 ========================= */
 app.get("/dashboard/summary", (req, res) => {
   try {
-    const normalizedWells = getNormalizedWells();
-    const totalRate = calculateTotalRate(normalizedWells);
+    const totalRate = calculateTotalRate(wells);
     const hourlyAverage = calculateHourlyAverage(productionHistory);
     const dailyAverage = calculateDailyAverage(productionHistory);
 
-    return res.json({
+    res.json({
       total_rate: totalRate,
       hourly_average: hourlyAverage,
       daily_average: dailyAverage,
@@ -845,7 +653,7 @@ app.get("/dashboard/summary", (req, res) => {
     });
   } catch (error) {
     console.error("Error in /dashboard/summary:", error.message);
-    return res.status(500).json({ error: "Failed to load dashboard summary" });
+    res.status(500).json({ error: "Failed to load dashboard summary" });
   }
 });
 
@@ -854,18 +662,35 @@ app.get("/dashboard/summary", (req, res) => {
 ========================= */
 app.get("/dashboard/overview", (req, res) => {
   try {
-    const normalizedWells = getNormalizedWells();
-    const latestDNs = getMergedLatestDNs();
-    const latestDNsByWell = getLatestDNsByWellMap();
-
-    const totalRate = calculateTotalRate(normalizedWells);
+    const totalRate = calculateTotalRate(wells);
     const hourlyAverage = calculateHourlyAverage(productionHistory);
     const dailyAverage = calculateDailyAverage(productionHistory);
 
     const monthlyTarget = Number(process.env.MONTHLY_TARGET) || 25000;
     const targetGap = totalRate - monthlyTarget;
 
-    const activeDNCount = latestDNs.filter((dn) => !dn.is_closed).length;
+    const dnMap = new Map();
+
+    for (const well of wells) {
+      const wellId = well.well_id || well.id;
+      const dns = getLatestDNsForWell(wellId) || [];
+
+      dns.forEach((dn) => {
+        const dnId = String(dn.dn_id || "").trim();
+        if (!dnId) return;
+        dnMap.set(dnId, dn);
+      });
+    }
+
+    const activeDNCount = Array.from(dnMap.values()).filter((dn) => {
+      const status = String(
+        normalizeWorkflowStatus(dn.dn_status || dn.status || "")
+      )
+        .toLowerCase()
+        .trim();
+
+      return status !== "closed";
+    }).length;
 
     const statusCounts = {
       on_production: 0,
@@ -876,33 +701,44 @@ app.get("/dashboard/overview", (req, res) => {
       locked_potential: 0
     };
 
-    normalizedWells.forEach((w) => {
-      const rawStatus = toSafeLower(w.production_status);
+    wells.forEach((w) => {
+      const nw = normalizeWell(w);
+      const rawStatus = String(nw.production_status || "").toLowerCase().trim();
 
       if (rawStatus.includes("locked")) {
-        statusCounts.locked_potential += 1;
+        statusCounts.locked_potential++;
       } else if (rawStatus === "on production") {
-        statusCounts.on_production += 1;
+        statusCounts.on_production++;
       } else if (rawStatus === "testing") {
-        statusCounts.testing += 1;
+        statusCounts.testing++;
       } else if (rawStatus === "standby") {
-        statusCounts.standby += 1;
+        statusCounts.standby++;
       } else if (rawStatus === "mothball" || rawStatus === "moth ball") {
-        statusCounts.mothball += 1;
+        statusCounts.mothball++;
       } else if (rawStatus === "shut-in" || rawStatus === "shut in") {
-        statusCounts.shut_in += 1;
+        statusCounts.shut_in++;
       }
     });
 
     let ainDarRate = 0;
     let abqaiqRate = 0;
 
-    normalizedWells.forEach((w) => {
-      const rate = toNumber(w.oil_rate_bopd, 0);
-      const field = toSafeString(w.field_code).toUpperCase();
-      const status = toSafeLower(w.production_status);
+    wells.forEach((w) => {
+      const nw = normalizeWell(w);
+      const rate = Number(nw.oil_rate_bopd) || 0;
+      const field = String(nw.field_code || "").toUpperCase().trim();
+      const status = String(nw.production_status || "").toLowerCase().trim();
+
       const includeInProduction =
         status === "on production" || status === "testing";
+
+      console.log("FIELD DEBUG:", {
+        well_name: nw.well_name,
+        field_code: field,
+        production_status: status,
+        oil_rate_bopd: rate,
+        include_in_production: includeInProduction
+      });
 
       if (!includeInProduction) return;
 
@@ -910,6 +746,12 @@ app.get("/dashboard/overview", (req, res) => {
         ainDarRate += rate;
       } else if (field === "ABQQ") {
         abqaiqRate += rate;
+      } else {
+        console.log("UNMAPPED PRODUCING WELL:", {
+          well_name: nw.well_name,
+          field_code: field,
+          oil_rate_bopd: rate
+        });
       }
     });
 
@@ -948,10 +790,10 @@ app.get("/dashboard/overview", (req, res) => {
     }
 
     const productionTrend = calculateProductionDrop(productionHistory);
-    const dnImpact = calculateDNImpact(normalizedWells, latestDNsByWell);
-    const performance = getTopAndLowWells(normalizedWells);
+    const dnImpact = calculateDNImpact(wells);
+    const performance = getTopAndLowWells(wells);
 
-    return res.json({
+    res.json({
       kpis: {
         total_rate: totalRate,
         hourly_average: hourlyAverage,
@@ -981,450 +823,17 @@ app.get("/dashboard/overview", (req, res) => {
     });
   } catch (error) {
     console.error("Error in /dashboard/overview:", error);
-    return res.status(500).json({ error: "Failed to load dashboard overview" });
-  }
-});
-
-/* =========================
-   DASHBOARD RISK
-========================= */
-app.get("/dashboard/risk", (req, res) => {
-  try {
-    if (!coreEngine) {
-      const fallbackRisk = buildRiskDashboard(getNormalizedWells(), getMergedLatestDNs());
-      return res.json({
-        top_risk_wells: Array.isArray(fallbackRisk?.top_risk_wells)
-          ? fallbackRisk.top_risk_wells.slice(0, 10)
-          : [],
-        top_risk_dns: Array.isArray(fallbackRisk?.top_risk_dns)
-          ? fallbackRisk.top_risk_dns.slice(0, 10)
-          : []
-      });
-    }
-
-    const topRiskWells = [];
-
-    if (coreEngine.wellIndex instanceof Map) {
-      for (const [wellId, well] of coreEngine.wellIndex.entries()) {
-        const dns =
-          typeof coreEngine.getDNsForWell === "function"
-            ? coreEngine.getDNsForWell(wellId)
-            : [];
-        const risk = calculateWellRisk(well, dns);
-
-        topRiskWells.push({
-          well_id: well.well_id,
-          well_name: well.well_name,
-          field_code: well.field_code,
-          production_status: well.production_status,
-          oil_rate_bopd: well.oil_rate_bopd,
-          risk_score: risk.score,
-          risk_level: risk.level,
-          reasons: risk.reasons
-        });
-      }
-    }
-
-    topRiskWells.sort((a, b) => b.risk_score - a.risk_score);
-
-    const topRiskDNs = [];
-    const dnMap = getCoreEngineDNMap(coreEngine);
-
-    if (dnMap instanceof Map) {
-      for (const [, dn] of dnMap.entries()) {
-        const risk = calculateDNRisk(dn);
-
-        topRiskDNs.push({
-          dn_id: dn.dn_id,
-          well_id: dn.well_id,
-          dn_type: dn.dn_type,
-          priority: dn.priority,
-          workflow_status: dn.workflow_status,
-          current_step: dn.current_step,
-          risk_score: risk.score,
-          risk_level: risk.level,
-          reasons: risk.reasons
-        });
-      }
-    }
-
-    topRiskDNs.sort((a, b) => b.risk_score - a.risk_score);
-
-    return res.json({
-      top_risk_wells: topRiskWells.slice(0, 10),
-      top_risk_dns: topRiskDNs.slice(0, 10)
-    });
-  } catch (error) {
-    console.error("Error in /dashboard/risk:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-/* =========================
-   DASHBOARD INTELLIGENCE
-========================= */
-app.get("/dashboard/intelligence", (req, res) => {
-  try {
-    const safeWells = getNormalizedWells();
-    const safeDNs = getMergedLatestDNs();
-
-    let safeRiskData = null;
-
-    try {
-      safeRiskData = buildRiskDashboard(safeWells, safeDNs);
-    } catch (riskError) {
-      console.error("Risk intelligence dependency failed:", riskError.message);
-      safeRiskData = null;
-    }
-
-    const intelligence = buildSystemIntelligence({
-      wells: safeWells,
-      dns: safeDNs,
-      riskData: safeRiskData,
-      riskItems: Array.isArray(safeRiskData?.top_risk_wells)
-        ? safeRiskData.top_risk_wells
-        : []
-    });
-
-    return res.json(intelligence);
-  } catch (error) {
-    console.error("Error in /dashboard/intelligence:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-/* =========================
-   DASHBOARD SYSTEM
-========================= */
-app.get("/dashboard/system", (req, res) => {
-  try {
-    const normalizedWells = getNormalizedWells();
-    const latestDNs = getMergedLatestDNs();
-    const latestDNsByWell = getLatestDNsByWellMap();
-
-    const overviewSection = dashboardBuilders.buildOverviewSection(
-      normalizedWells,
-      latestDNs,
-      productionHistory,
-      process.env.MONTHLY_TARGET
-    );
-
-    const productionSection = dashboardBuilders.buildProductionSection(
-      normalizedWells,
-      latestDNs,
-      productionHistory
-    );
-
-    const dnSection = dashboardBuilders.buildDNSection(
-      latestDNs,
-      normalizedWells,
-      latestDNsByWell
-    );
-
-    let riskSection = dashboardBuilders.buildRiskSection(null);
-
-    if (coreEngine) {
-      try {
-        riskSection = dashboardBuilders.buildRiskSectionFromEngine(coreEngine);
-      } catch (riskError) {
-        console.error("Risk section build failed:", riskError.message);
-      }
-    }
-
-    let intelligenceSection = dashboardBuilders.buildIntelligenceSection(null);
-
-    try {
-      const safeRiskData = buildRiskDashboard(normalizedWells, latestDNs);
-      const intelligence = buildSystemIntelligence({
-        wells: normalizedWells,
-        dns: latestDNs,
-        riskData: safeRiskData,
-        riskItems: Array.isArray(safeRiskData?.top_risk_wells)
-          ? safeRiskData.top_risk_wells
-          : []
-      });
-      intelligenceSection = dashboardBuilders.buildIntelligenceSection(intelligence);
-    } catch (intError) {
-      console.error("Intelligence section build failed:", intError.message);
-    }
-
-    return res.json({
-      generated_at: new Date().toISOString(),
-      overview: overviewSection,
-      production: productionSection,
-      dn: dnSection,
-      risk: riskSection,
-      intelligence: intelligenceSection
-    });
-  } catch (error) {
-    console.error("Error in /dashboard/system:", error);
-    return res.status(500).json({ error: "Failed to load dashboard system" });
-  }
-});
-
-/* =========================
-   DASHBOARD OPERATIONS
-========================= */
-app.get("/dashboard/operations", (req, res) => {
-  try {
-    const normalizedWells = getNormalizedWells();
-    const latestDNs = getMergedLatestDNs();
-    const latestDNsByWell = getLatestDNsByWellMap();
-
-    const statusCounts = {
-      on_production: 0,
-      testing: 0,
-      standby: 0,
-      mothball: 0,
-      shut_in: 0,
-      locked_potential: 0
-    };
-
-    normalizedWells.forEach((w) => {
-      const rawStatus = toSafeLower(w.production_status);
-
-      if (rawStatus.includes("locked")) {
-        statusCounts.locked_potential += 1;
-      } else if (rawStatus === "on production") {
-        statusCounts.on_production += 1;
-      } else if (rawStatus === "testing") {
-        statusCounts.testing += 1;
-      } else if (rawStatus === "standby") {
-        statusCounts.standby += 1;
-      } else if (rawStatus === "mothball" || rawStatus === "moth ball") {
-        statusCounts.mothball += 1;
-      } else if (rawStatus === "shut-in" || rawStatus === "shut in") {
-        statusCounts.shut_in += 1;
-      }
-    });
-
-    const activeDNCount = latestDNs.filter((dn) => !dn.is_closed).length;
-    const closedDNCount = latestDNs.filter((dn) => dn.is_closed).length;
-
-    const dnByStatus = {
-      open: 0,
-      in_progress: 0,
-      completed: 0,
-      closed: 0,
-      waiting: 0
-    };
-
-    latestDNs.forEach((dn) => {
-      const ws = toSafeLower(dn.workflow_status || "");
-      if (ws === "closed") dnByStatus.closed += 1;
-      else if (ws === "completed") dnByStatus.completed += 1;
-      else if (ws === "in progress") dnByStatus.in_progress += 1;
-      else if (ws === "waiting") dnByStatus.waiting += 1;
-      else dnByStatus.open += 1;
-    });
-
-    const dnByOwner = {};
-    latestDNs.forEach((dn) => {
-      const owner = toSafeString(dn.current_owner_name || "Unassigned");
-      if (!dnByOwner[owner]) {
-        dnByOwner[owner] = 0;
-      }
-      dnByOwner[owner] += 1;
-    });
-
-    const ownerList = Object.entries(dnByOwner)
-      .map(([name, count]) => ({ name, dn_count: count }))
-      .sort((a, b) => b.dn_count - a.dn_count);
-
-    const dnImpact = calculateDNImpact(normalizedWells, latestDNsByWell);
-
-    const totalWells = normalizedWells.length;
-    const producingWellsPercent = Math.round(
-      totalWells > 0 ? (statusCounts.on_production / totalWells) * 100 : 0
-    ) || 0;
-
-    const bottlenecks = [];
-
-    if (statusCounts.locked_potential > 0) {
-      bottlenecks.push({
-        type: "locked_potential",
-        count: statusCounts.locked_potential,
-        message: `${statusCounts.locked_potential} wells with locked production potential`
-      });
-    }
-
-    if (dnImpact.affected_wells > 0) {
-      bottlenecks.push({
-        type: "dn_affected",
-        count: dnImpact.affected_wells,
-        lost_production: dnImpact.lost_production,
-        message: `${dnImpact.affected_wells} wells affected by active DNs, ${dnImpact.lost_production} BOPD lost`
-      });
-    }
-
-    const shutInPercent = Math.round(
-      totalWells > 0 ? (statusCounts.shut_in / totalWells) * 100 : 0
-    ) || 0;
-
-    if (shutInPercent > 15) {
-      bottlenecks.push({
-        type: "high_shut_in",
-        percentage: shutInPercent,
-        count: statusCounts.shut_in,
-        message: `${shutInPercent}% of wells shut-in (${statusCounts.shut_in} wells)`
-      });
-    }
-
-    return res.json({
-      generated_at: new Date().toISOString(),
-      well_status: statusCounts,
-      well_metrics: {
-        total_wells: totalWells,
-        producing_percent: producingWellsPercent,
-        shut_in_percent: shutInPercent
-      },
-      dn_operational_load: {
-        active_dn_count: activeDNCount,
-        closed_dn_count: closedDNCount,
-        total_dn_count: latestDNs.length,
-        dn_by_status: dnByStatus
-      },
-      dn_ownership: {
-        assigned_owners: ownerList.length,
-        top_owners: ownerList.slice(0, 5)
-      },
-      operational_alerts: {
-        bottleneck_count: bottlenecks.length,
-        bottlenecks
-      },
-      production_impact: dnImpact
-    });
-  } catch (error) {
-    console.error("Error in /dashboard/operations:", error);
-    return res.status(500).json({ error: "Failed to load operations dashboard" });
-  }
-});
-
-/* =========================
-   DASHBOARD RECOMMENDATIONS
-========================= */
-app.get("/dashboard/recommendations", (req, res) => {
-  try {
-    const normalizedWells = getNormalizedWells();
-    const latestDNs = getMergedLatestDNs();
-
-    let riskData;
-    try {
-      riskData = buildRiskDashboard(normalizedWells, latestDNs);
-    } catch (err) {
-      console.error("Risk build failed in /dashboard/recommendations:", err.message);
-      riskData = { top_risk_wells: [], top_risk_dns: [] };
-    }
-
-    const intelligence = buildSystemIntelligence({
-      wells: normalizedWells,
-      dns: latestDNs,
-      riskData,
-      riskItems: Array.isArray(riskData?.top_risk_wells)
-        ? riskData.top_risk_wells
-        : []
-    });
-
-    const recommendations = generateRecommendations({
-      wells: normalizedWells,
-      dns: latestDNs,
-      risk: riskData,
-      intelligence
-    });
-
-    return res.json(recommendations);
-  } catch (error) {
-    console.error("Error in /dashboard/recommendations:", error);
-    return res.status(500).json({ error: "Failed to generate recommendations" });
-  }
-});
-
-/* =========================
-   DASHBOARD EXECUTIVE
-========================= */
-app.get("/dashboard/executive", (req, res) => {
-  try {
-    const normalizedWells = getNormalizedWells();
-    const latestDNs = getMergedLatestDNs();
-
-    const executiveDashboard = dashboardBuilders.buildExecutiveDashboard({
-      wells: normalizedWells,
-      dns: latestDNs,
-      productionHistory,
-      monthlyTarget: process.env.MONTHLY_TARGET,
-      coreEngine
-    });
-
-    return res.json(executiveDashboard);
-  } catch (error) {
-    console.error("Error in /dashboard/executive:", error);
-    return res.status(500).json({ error: "Failed to load executive dashboard" });
-  }
-});
-
-/* =========================
-   DASHBOARD FIELD
-========================= */
-app.get("/dashboard/field/:field_code", (req, res) => {
-  try {
-    const fieldCode = toSafeString(req.params.field_code).toUpperCase();
-    const normalizedWells = getNormalizedWells();
-    const latestDNs = getMergedLatestDNs();
-
-    const fieldDashboard = dashboardBuilders.buildFieldDashboard(fieldCode, {
-      wells: normalizedWells,
-      dns: latestDNs,
-      productionHistory,
-      monthlyTarget: process.env.MONTHLY_TARGET,
-      coreEngine
-    });
-
-    if (!fieldDashboard) {
-      return res.status(404).json({ error: "Field not found" });
-    }
-
-    return res.json(fieldDashboard);
-  } catch (error) {
-    console.error(`Error in /dashboard/field/${req.params.field_code}:`, error);
-    return res.status(500).json({ error: "Failed to load field dashboard" });
-  }
-});
-
-/* =========================
-   DASHBOARD WELL
-========================= */
-app.get("/dashboard/well/:well_id", (req, res) => {
-  try {
-    const wellId = toSafeString(req.params.well_id);
-    const normalizedWells = getNormalizedWells();
-    const latestDNs = getMergedLatestDNs();
-
-    const wellDashboard = dashboardBuilders.buildWellDashboard(wellId, {
-      wells: normalizedWells,
-      dns: latestDNs,
-      productionHistory,
-      monthlyTarget: process.env.MONTHLY_TARGET,
-      coreEngine
-    });
-
-    if (!wellDashboard) {
-      return res.status(404).json({ error: "Well not found" });
-    }
-
-    return res.json(wellDashboard);
-  } catch (error) {
-    console.error(`Error in /dashboard/well/${req.params.well_id}:`, error);
-    return res.status(500).json({ error: "Failed to load well dashboard" });
+    res.status(500).json({ error: "Failed to load dashboard overview" });
   }
 });
 
 /* =========================
    START
 ========================= */
+loadData();
 function initializeCoreEngineData() {
   try {
     coreEngine = CoreEngine.initializeCoreEngine(wells, dnLogs, dnMaster);
-
     if (!coreEngine) {
       console.warn("[CoreEngine] Initialization returned null, advanced features disabled");
     }
@@ -1432,10 +841,6 @@ function initializeCoreEngineData() {
     console.error("[CoreEngine] Failed to initialize:", error);
   }
 }
-
-loadData();
-initializeCoreEngineData();
-
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

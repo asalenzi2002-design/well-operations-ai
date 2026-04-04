@@ -1,121 +1,501 @@
 well_id,well_name,field,production_status,oil_rate_bopd,last_updated
-1,ABQQ-015,Abqaiq,On Production,1095,2026-03-23
-2,ABQQ-038,Abqaiq,On Production,932,2026-03-11
-3,ANDR-025,Ain Dar,On Production,768,2026-03-25
-4,ANDR-039,Ain Dar,On Production,509,2026-03-23
-5,ANDR-049,Ain Dar,Locked Potential,0,2026-03-11
-6,ANDR-013,Ain Dar,On Production,521,2026-03-06
-7,ABQQ-039,Abqaiq,On Production,934,2026-03-04
-8,ABQQ-041,Abqaiq,On Production,1485,2026-03-27
-9,ABQQ-045,Abqaiq,On Production,654,2026-03-12
-10,ANDR-060,Ain Dar,On Production,910,2026-03-13
-11,ABQQ-024,Abqaiq,On Production,701,2026-03-21
-12,ANDR-050,Ain Dar,Testing,268,2026-03-08
-13,ABQQ-018,Abqaiq,Shut-in,0,2026-04-01
-14,ABQQ-020,Abqaiq,On Production,989,2026-03-21
-15,ANDR-036,Ain Dar,Testing,349,2026-03-07
-16,ANDR-046,Ain Dar,Testing,309,2026-03-09
-17,ANDR-006,Ain Dar,On Production,1046,2026-03-25
-18,ABQQ-001,Abqaiq,Testing,196,2026-03-14
-19,ABQQ-002,Abqaiq,Locked Potential,0,2026-03-06
-20,ANDR-009,Ain Dar,On Production,1282,2026-03-24
-21,ABQQ-004,Abqaiq,On Production,1005,2026-03-20
-22,ABQQ-019,Abqaiq,On Production,1022,2026-03-25
-23,ANDR-056,Ain Dar,Standby,0,2026-03-11
-24,ANDR-045,Ain Dar,On Production,1446,2026-03-07
-25,ANDR-033,Ain Dar,On Production,901,2026-03-31
-26,ABQQ-059,Abqaiq,Mothball,0,2026-03-22
-27,ANDR-032,Ain Dar,Testing,223,2026-03-26
-28,ABQQ-014,Abqaiq,On Production,668,2026-03-31
-29,ABQQ-009,Abqaiq,Shut-in,0,2026-03-07
-30,ABQQ-058,Abqaiq,Mothball,0,2026-03-17
-31,ABQQ-022,Abqaiq,On Production,908,2026-03-23
-32,ANDR-003,Ain Dar,Standby,0,2026-03-28
-33,ANDR-043,Ain Dar,On Production,1421,2026-03-06
-34,ANDR-041,Ain Dar,On Production,779,2026-03-20
-35,ANDR-001,Ain Dar,On Production,854,2026-04-01
-36,ABQQ-040,Abqaiq,On Production,1350,2026-03-14
-37,ABQQ-026,Abqaiq,On Production,777,2026-03-23
-38,ABQQ-053,Abqaiq,On Production,1217,2026-03-18
-39,ABQQ-031,Abqaiq,Testing,339,2026-03-15
-40,ANDR-027,Ain Dar,On Production,1327,2026-03-21
-41,ABQQ-048,Abqaiq,On Production,729,2026-03-26
-42,ANDR-011,Ain Dar,On Production,635,2026-03-08
-43,ABQQ-007,Abqaiq,On Production,436,2026-03-11
-44,ANDR-021,Ain Dar,Testing,235,2026-03-24
-45,ABQQ-052,Abqaiq,Testing,278,2026-03-15
-46,ABQQ-006,Abqaiq,On Production,1276,2026-03-28
-47,ANDR-059,Ain Dar,On Production,838,2026-04-02
-48,ANDR-020,Ain Dar,Standby,0,2026-03-28
-49,ANDR-015,Ain Dar,On Production,1219,2026-03-12
-50,ANDR-053,Ain Dar,On Production,597,2026-03-12
-51,ANDR-031,Ain Dar,On Production,1022,2026-03-21
-52,ABQQ-050,Abqaiq,On Production,1371,2026-03-12
-53,ABQQ-057,Abqaiq,On Production,961,2026-03-05
-54,ANDR-048,Ain Dar,On Production,1342,2026-04-01
-55,ANDR-024,Ain Dar,Shut-in,0,2026-03-04
-56,ANDR-007,Ain Dar,Testing,356,2026-03-22
-57,ABQQ-044,Abqaiq,On Production,1090,2026-03-24
-58,ABQQ-047,Abqaiq,On Production,1003,2026-03-12
-59,ABQQ-021,Abqaiq,Shut-in,0,2026-03-27
-60,ABQQ-033,Abqaiq,On Production,676,2026-03-10
-61,ABQQ-030,Abqaiq,On Production,405,2026-03-19
-62,ABQQ-060,Abqaiq,On Production,1085,2026-03-31
-63,ANDR-052,Ain Dar,Testing,158,2026-03-15
-64,ABQQ-049,Abqaiq,On Production,849,2026-03-21
-65,ABQQ-056,Abqaiq,On Production,489,2026-03-12
-66,ANDR-010,Ain Dar,Standby,0,2026-03-30
-67,ABQQ-042,Abqaiq,On Production,1334,2026-03-09
-68,ANDR-005,Ain Dar,Mothball,0,2026-03-24
-69,ANDR-014,Ain Dar,Shut-in,0,2026-03-16
-70,ANDR-017,Ain Dar,On Production,1130,2026-03-18
-71,ANDR-028,Ain Dar,On Production,1480,2026-03-18
-72,ABQQ-037,Abqaiq,On Production,946,2026-03-12
-73,ANDR-047,Ain Dar,Shut-in,0,2026-03-13
-74,ANDR-008,Ain Dar,On Production,893,2026-03-12
-75,ABQQ-046,Abqaiq,On Production,853,2026-03-26
-76,ABQQ-025,Abqaiq,On Production,1221,2026-03-17
-77,ANDR-019,Ain Dar,Locked Potential,0,2026-03-10
-78,ABQQ-010,Abqaiq,On Production,787,2026-03-04
-79,ABQQ-034,Abqaiq,On Production,889,2026-04-01
-80,ABQQ-051,Abqaiq,On Production,702,2026-03-18
-81,ANDR-057,Ain Dar,On Production,670,2026-03-15
-82,ABQQ-027,Abqaiq,Shut-in,0,2026-03-04
-83,ANDR-004,Ain Dar,On Production,775,2026-03-04
-84,ANDR-029,Ain Dar,On Production,1367,2026-03-16
-85,ABQQ-032,Abqaiq,On Production,1154,2026-03-15
-86,ABQQ-005,Abqaiq,On Production,958,2026-03-17
-87,ABQQ-028,Abqaiq,Locked Potential,0,2026-03-13
-88,ANDR-042,Ain Dar,On Production,897,2026-03-14
-89,ABQQ-043,Abqaiq,Mothball,0,2026-03-22
-90,ABQQ-055,Abqaiq,On Production,695,2026-03-15
-91,ABQQ-054,Abqaiq,On Production,427,2026-03-29
-92,ANDR-037,Ain Dar,Locked Potential,0,2026-03-22
-93,ANDR-044,Ain Dar,On Production,427,2026-04-01
-94,ABQQ-036,Abqaiq,Testing,107,2026-03-29
-95,ANDR-055,Ain Dar,Mothball,0,2026-03-07
-96,ANDR-030,Ain Dar,On Production,1352,2026-03-21
-97,ABQQ-017,Abqaiq,On Production,1154,2026-03-17
-98,ANDR-034,Ain Dar,On Production,1160,2026-03-14
-99,ABQQ-035,Abqaiq,Mothball,0,2026-03-15
-100,ABQQ-016,Abqaiq,Shut-in,0,2026-03-06
-101,ANDR-002,Ain Dar,Testing,270,2026-03-06
-102,ANDR-012,Ain Dar,Shut-in,0,2026-03-05
-103,ANDR-035,Ain Dar,Locked Potential,0,2026-03-07
-104,ABQQ-012,Abqaiq,On Production,500,2026-03-26
-105,ANDR-018,Ain Dar,Shut-in,0,2026-03-14
-106,ABQQ-011,Abqaiq,On Production,833,2026-03-15
-107,ABQQ-003,Abqaiq,On Production,1038,2026-03-23
-108,ANDR-026,Ain Dar,On Production,1469,2026-03-22
-109,ANDR-054,Ain Dar,On Production,724,2026-03-12
-110,ABQQ-029,Abqaiq,Standby,0,2026-03-14
-111,ANDR-022,Ain Dar,On Production,1406,2026-03-21
-112,ANDR-040,Ain Dar,On Production,1327,2026-03-18
-113,ABQQ-013,Abqaiq,On Production,1016,2026-03-30
-114,ANDR-058,Ain Dar,On Production,948,2026-03-17
-115,ABQQ-023,Abqaiq,Shut-in,0,2026-03-31
-116,ANDR-051,Ain Dar,On Production,710,2026-03-09
-117,ANDR-023,Ain Dar,On Production,1140,2026-03-17
-118,ABQQ-008,Abqaiq,Standby,0,2026-03-24
-119,ANDR-016,Ain Dar,On Production,1343,2026-03-21
-120,ANDR-038,Ain Dar,Shut-in,0,2026-03-23
+1,ANDR-710,Ain Dar,On Production,1339,2026-03-24
+2,ANDR-1321,Ain Dar,On Production,1343,2026-03-16
+3,ANDR-1118,Ain Dar,On Production,1238,2026-03-07
+4,ANDR-1260,Ain Dar,Testing,102,2026-03-13
+5,ANDR-632,Ain Dar,On Production,1552,2026-03-14
+6,ANDR-1759,Ain Dar,On Production,853,2026-03-24
+7,ANDR-780,Ain Dar,On Production,1126,2026-03-16
+8,ANDR-968,Ain Dar,On Production,705,2026-03-12
+9,ANDR-1519,Ain Dar,Testing,238,2026-03-14
+10,ANDR-512,Ain Dar,On Production,1055,2026-03-18
+11,ANDR-530,Ain Dar,Testing,420,2026-03-05
+12,ANDR-866,Ain Dar,Mothball,0,2026-03-07
+13,ANDR-682,Ain Dar,Standby,0,2026-03-26
+14,ANDR-953,Ain Dar,On Production,450,2026-03-26
+15,ANDR-540,Ain Dar,On Production,1637,2026-03-16
+16,ANDR-1476,Ain Dar,On Production,1354,2026-03-21
+17,ANDR-1523,Ain Dar,On Production,1419,2026-03-10
+18,ANDR-1815,Ain Dar,On Production,797,2026-03-14
+19,ANDR-627,Ain Dar,On Production,1136,2026-04-02
+20,ANDR-1769,Ain Dar,On Production,931,2026-03-14
+21,ANDR-925,Ain Dar,On Production,857,2026-03-31
+22,ANDR-350,Ain Dar,On Production,1423,2026-03-16
+23,ANDR-1074,Ain Dar,On Production,1382,2026-03-22
+24,ANDR-1589,Ain Dar,On Production,848,2026-03-13
+25,ANDR-1506,Ain Dar,On Production,1268,2026-03-28
+26,ANDR-804,Ain Dar,On Production,461,2026-03-07
+27,ANDR-1788,Ain Dar,On Production,668,2026-03-11
+28,ANDR-280,Ain Dar,Testing,491,2026-03-05
+29,ANDR-1475,Ain Dar,Testing,105,2026-03-18
+30,ANDR-236,Ain Dar,Testing,490,2026-03-21
+31,ANDR-1572,Ain Dar,Mothball,0,2026-03-16
+32,ANDR-873,Ain Dar,On Production,1356,2026-03-16
+33,ANDR-1913,Ain Dar,On Production,1483,2026-03-22
+34,ANDR-1561,Ain Dar,On Production,1363,2026-03-07
+35,ANDR-982,Ain Dar,On Production,1422,2026-03-21
+36,ANDR-353,Ain Dar,On Production,1017,2026-03-11
+37,ANDR-1496,Ain Dar,Shut-in,0,2026-03-15
+38,ANDR-550,Ain Dar,Standby,0,2026-04-02
+39,ANDR-1240,Ain Dar,On Production,1006,2026-03-25
+40,ANDR-653,Ain Dar,Shut-in,0,2026-04-02
+41,ANDR-336,Ain Dar,Shut-in,0,2026-03-23
+42,ANDR-1723,Ain Dar,On Production,888,2026-04-02
+43,ANDR-438,Ain Dar,Testing,357,2026-03-21
+44,ANDR-311,Ain Dar,Mothball,0,2026-03-09
+45,ANDR-888,Ain Dar,On Production,1646,2026-03-05
+46,ANDR-1877,Ain Dar,Locked Potential,0,2026-03-07
+47,ANDR-1389,Ain Dar,On Production,1426,2026-04-04
+48,ANDR-1305,Ain Dar,On Production,1248,2026-03-08
+49,ANDR-1855,Ain Dar,Shut-in,0,2026-03-22
+50,ANDR-852,Ain Dar,On Production,1568,2026-03-10
+51,ANDR-1225,Ain Dar,Mothball,0,2026-03-20
+52,ANDR-546,Ain Dar,Mothball,0,2026-03-20
+53,ANDR-444,Ain Dar,On Production,1278,2026-03-12
+54,ANDR-578,Ain Dar,On Production,711,2026-03-16
+55,ANDR-503,Ain Dar,On Production,1605,2026-03-14
+56,ANDR-758,Ain Dar,Shut-in,0,2026-03-22
+57,ANDR-572,Ain Dar,On Production,822,2026-04-03
+58,ANDR-435,Ain Dar,On Production,883,2026-03-21
+59,ANDR-879,Ain Dar,On Production,1226,2026-03-27
+60,ANDR-1851,Ain Dar,Shut-in,0,2026-03-22
+61,ANDR-183,Ain Dar,On Production,1413,2026-04-04
+62,ANDR-1053,Ain Dar,Testing,259,2026-03-28
+63,ANDR-1799,Ain Dar,On Production,532,2026-03-11
+64,ANDR-120,Ain Dar,On Production,762,2026-03-28
+65,ANDR-785,Ain Dar,On Production,684,2026-03-17
+66,ANDR-1785,Ain Dar,On Production,1205,2026-03-30
+67,ANDR-1986,Ain Dar,On Production,684,2026-03-11
+68,ANDR-1987,Ain Dar,On Production,1087,2026-04-01
+69,ANDR-1951,Ain Dar,On Production,1088,2026-03-17
+70,ANDR-1981,Ain Dar,Shut-in,0,2026-03-23
+71,ANDR-832,Ain Dar,On Production,856,2026-04-02
+72,ANDR-1850,Ain Dar,On Production,947,2026-04-01
+73,ANDR-1308,Ain Dar,On Production,697,2026-03-10
+74,ANDR-1801,Ain Dar,On Production,534,2026-03-24
+75,ANDR-777,Ain Dar,On Production,1208,2026-04-02
+76,ANDR-449,Ain Dar,Testing,86,2026-03-08
+77,ANDR-601,Ain Dar,On Production,666,2026-03-22
+78,ANDR-1650,Ain Dar,On Production,1391,2026-03-13
+79,ANDR-1988,Ain Dar,Testing,413,2026-03-27
+80,ANDR-1941,Ain Dar,On Production,1552,2026-03-11
+81,ANDR-1606,Ain Dar,Shut-in,0,2026-03-27
+82,ANDR-351,Ain Dar,On Production,627,2026-03-27
+83,ANDR-1249,Ain Dar,Standby,0,2026-03-11
+84,ANDR-724,Ain Dar,Locked Potential,0,2026-03-14
+85,ANDR-129,Ain Dar,On Production,1462,2026-03-08
+86,ANDR-599,Ain Dar,Standby,0,2026-03-29
+87,ANDR-364,Ain Dar,Standby,0,2026-03-25
+88,ANDR-1282,Ain Dar,On Production,1588,2026-04-04
+89,ANDR-295,Ain Dar,On Production,625,2026-03-28
+90,ANDR-1500,Ain Dar,On Production,1587,2026-03-11
+91,ANDR-587,Ain Dar,On Production,1455,2026-03-21
+92,ANDR-1095,Ain Dar,On Production,1052,2026-03-28
+93,ANDR-349,Ain Dar,On Production,1077,2026-03-14
+94,ANDR-1484,Ain Dar,On Production,1583,2026-03-19
+95,ANDR-863,Ain Dar,Testing,361,2026-03-25
+96,ANDR-564,Ain Dar,On Production,1004,2026-03-26
+97,ANDR-223,Ain Dar,Locked Potential,0,2026-03-12
+98,ANDR-222,Ain Dar,Testing,460,2026-03-18
+99,ANDR-1706,Ain Dar,Testing,174,2026-03-29
+100,ANDR-595,Ain Dar,On Production,1016,2026-03-12
+101,ANDR-1778,Ain Dar,On Production,1524,2026-03-16
+102,ANDR-202,Ain Dar,Shut-in,0,2026-03-09
+103,ANDR-332,Ain Dar,On Production,1189,2026-03-30
+104,ANDR-825,Ain Dar,On Production,1543,2026-03-31
+105,ANDR-155,Ain Dar,Standby,0,2026-03-18
+106,ANDR-229,Ain Dar,Mothball,0,2026-03-15
+107,ANDR-1502,Ain Dar,Shut-in,0,2026-04-01
+108,ANDR-1587,Ain Dar,On Production,1032,2026-03-20
+109,ANDR-448,Ain Dar,Locked Potential,0,2026-03-30
+110,ANDR-1258,Ain Dar,On Production,1428,2026-04-01
+111,ANDR-1410,Ain Dar,Mothball,0,2026-03-20
+112,ANDR-744,Ain Dar,Testing,431,2026-04-03
+113,ANDR-930,Ain Dar,On Production,1602,2026-03-05
+114,ANDR-354,Ain Dar,Locked Potential,0,2026-04-01
+115,ANDR-1426,Ain Dar,Testing,390,2026-03-16
+116,ANDR-1231,Ain Dar,On Production,1520,2026-03-23
+117,ANDR-553,Ain Dar,On Production,1058,2026-03-08
+118,ANDR-1439,Ain Dar,On Production,1075,2026-03-17
+119,ANDR-1624,Ain Dar,Mothball,0,2026-03-05
+120,ANDR-1970,Ain Dar,On Production,875,2026-03-15
+121,ANDR-776,Ain Dar,On Production,616,2026-03-30
+122,ANDR-665,Ain Dar,On Production,603,2026-03-30
+123,ANDR-561,Ain Dar,On Production,1412,2026-03-26
+124,ANDR-395,Ain Dar,On Production,1029,2026-03-13
+125,ANDR-1072,Ain Dar,On Production,928,2026-03-06
+126,ANDR-910,Ain Dar,Testing,400,2026-03-17
+127,ANDR-1956,Ain Dar,Shut-in,0,2026-03-29
+128,ANDR-657,Ain Dar,Testing,195,2026-03-15
+129,ANDR-372,Ain Dar,Testing,152,2026-04-02
+130,ANDR-911,Ain Dar,On Production,1079,2026-03-16
+131,ANDR-1582,Ain Dar,On Production,1041,2026-03-21
+132,ANDR-805,Ain Dar,On Production,1072,2026-03-13
+133,ANDR-378,Ain Dar,On Production,1474,2026-03-18
+134,ANDR-182,Ain Dar,On Production,531,2026-03-07
+135,ANDR-430,Ain Dar,Standby,0,2026-03-16
+136,ANDR-193,Ain Dar,Mothball,0,2026-03-28
+137,ANDR-1856,Ain Dar,On Production,1628,2026-03-17
+138,ANDR-1783,Ain Dar,Locked Potential,0,2026-03-14
+139,ANDR-1590,Ain Dar,On Production,532,2026-03-11
+140,ANDR-1481,Ain Dar,On Production,1512,2026-03-15
+141,ANDR-384,Ain Dar,On Production,821,2026-03-17
+142,ANDR-933,Ain Dar,On Production,1457,2026-04-02
+143,ANDR-518,Ain Dar,On Production,1132,2026-03-25
+144,ANDR-1878,Ain Dar,On Production,779,2026-03-25
+145,ANDR-607,Ain Dar,Shut-in,0,2026-03-26
+146,ANDR-1563,Ain Dar,Shut-in,0,2026-04-03
+147,ANDR-422,Ain Dar,On Production,966,2026-03-25
+148,ANDR-891,Ain Dar,On Production,1277,2026-03-08
+149,ANDR-101,Ain Dar,On Production,1561,2026-03-21
+150,ANDR-292,Ain Dar,On Production,1511,2026-03-24
+151,ANDR-1510,Ain Dar,On Production,1355,2026-03-11
+152,ANDR-373,Ain Dar,On Production,1574,2026-03-31
+153,ANDR-1448,Ain Dar,On Production,1442,2026-04-01
+154,ANDR-745,Ain Dar,Shut-in,0,2026-03-16
+155,ANDR-1726,Ain Dar,Standby,0,2026-03-30
+156,ANDR-114,Ain Dar,Mothball,0,2026-03-18
+157,ANDR-330,Ain Dar,On Production,682,2026-03-21
+158,ANDR-1663,Ain Dar,On Production,765,2026-03-20
+159,ANDR-1298,Ain Dar,On Production,1492,2026-03-13
+160,ANDR-954,Ain Dar,On Production,1438,2026-03-20
+161,ANDR-664,Ain Dar,Shut-in,0,2026-03-31
+162,ANDR-713,Ain Dar,On Production,1490,2026-03-12
+163,ANDR-1884,Ain Dar,On Production,592,2026-03-27
+164,ANDR-1874,Ain Dar,On Production,1299,2026-03-25
+165,ANDR-102,Ain Dar,On Production,1029,2026-03-12
+166,ANDR-701,Ain Dar,On Production,1637,2026-03-14
+167,ANDR-252,Ain Dar,On Production,1364,2026-03-18
+168,ANDR-440,Ain Dar,Standby,0,2026-03-18
+169,ANDR-1386,Ain Dar,Shut-in,0,2026-03-21
+170,ANDR-1890,Ain Dar,On Production,836,2026-03-13
+171,ANDR-492,Ain Dar,Standby,0,2026-03-28
+172,ANDR-1420,Ain Dar,Mothball,0,2026-04-03
+173,ANDR-584,Ain Dar,Shut-in,0,2026-03-13
+174,ANDR-1390,Ain Dar,On Production,1240,2026-03-14
+175,ANDR-1667,Ain Dar,On Production,761,2026-03-20
+176,ANDR-1129,Ain Dar,Standby,0,2026-03-19
+177,ANDR-1339,Ain Dar,On Production,655,2026-03-08
+178,ANDR-1102,Ain Dar,Shut-in,0,2026-03-19
+179,ANDR-1015,Ain Dar,On Production,745,2026-03-22
+180,ANDR-1993,Ain Dar,On Production,766,2026-04-02
+181,ANDR-371,Ain Dar,On Production,1143,2026-03-16
+182,ANDR-1665,Ain Dar,On Production,614,2026-03-08
+183,ANDR-790,Ain Dar,On Production,1542,2026-03-23
+184,ANDR-1641,Ain Dar,On Production,1449,2026-03-08
+185,ANDR-732,Ain Dar,Shut-in,0,2026-04-02
+186,ANDR-800,Ain Dar,Locked Potential,0,2026-03-06
+187,ANDR-1444,Ain Dar,Testing,130,2026-03-11
+188,ANDR-1893,Ain Dar,On Production,655,2026-03-21
+189,ANDR-406,Ain Dar,On Production,509,2026-04-03
+190,ANDR-157,Ain Dar,On Production,1050,2026-03-24
+191,ANDR-249,Ain Dar,On Production,950,2026-03-19
+192,ANDR-798,Ain Dar,On Production,818,2026-03-30
+193,ANDR-1634,Ain Dar,On Production,943,2026-03-20
+194,ANDR-1146,Ain Dar,On Production,925,2026-03-21
+195,ANDR-1470,Ain Dar,On Production,972,2026-03-14
+196,ANDR-923,Ain Dar,On Production,1402,2026-03-07
+197,ANDR-659,Ain Dar,Testing,160,2026-04-02
+198,ANDR-453,Ain Dar,Testing,380,2026-03-26
+199,ANDR-1434,Ain Dar,On Production,962,2026-03-21
+200,ANDR-1203,Ain Dar,On Production,1237,2026-03-08
+201,ANDR-342,Ain Dar,On Production,1231,2026-03-17
+202,ANDR-402,Ain Dar,On Production,1054,2026-04-04
+203,ANDR-1674,Ain Dar,Testing,282,2026-03-27
+204,ANDR-985,Ain Dar,Shut-in,0,2026-03-14
+205,ANDR-1996,Ain Dar,On Production,550,2026-03-06
+206,ANDR-1508,Ain Dar,On Production,1036,2026-03-11
+207,ANDR-1621,Ain Dar,Shut-in,0,2026-03-10
+208,ANDR-751,Ain Dar,On Production,839,2026-03-16
+209,ANDR-1675,Ain Dar,On Production,730,2026-03-15
+210,ANDR-742,Ain Dar,On Production,530,2026-03-26
+211,ANDR-1034,Ain Dar,On Production,1636,2026-03-24
+212,ANDR-1092,Ain Dar,On Production,1054,2026-03-25
+213,ANDR-1179,Ain Dar,On Production,861,2026-03-31
+214,ANDR-1897,Ain Dar,Testing,267,2026-03-19
+215,ANDR-379,Ain Dar,Testing,164,2026-03-27
+216,ANDR-1966,Ain Dar,Testing,326,2026-03-05
+217,ANDR-1764,Ain Dar,Testing,253,2026-03-10
+218,ANDR-177,Ain Dar,On Production,738,2026-03-11
+219,ANDR-1880,Ain Dar,On Production,1263,2026-03-05
+220,ANDR-1570,Ain Dar,On Production,1199,2026-04-02
+221,ANDR-1014,Ain Dar,Testing,215,2026-03-18
+222,ANDR-477,Ain Dar,On Production,986,2026-03-17
+223,ANDR-753,Ain Dar,On Production,1210,2026-04-01
+224,ANDR-1482,Ain Dar,On Production,501,2026-03-16
+225,ANDR-1574,Ain Dar,On Production,1121,2026-03-06
+226,ANDR-943,Ain Dar,On Production,1400,2026-03-06
+227,ANDR-1664,Ain Dar,Testing,289,2026-04-01
+228,ANDR-138,Ain Dar,On Production,1073,2026-03-20
+229,ANDR-340,Ain Dar,Testing,355,2026-03-31
+230,ANDR-479,Ain Dar,On Production,1556,2026-03-22
+231,ANDR-1744,Ain Dar,On Production,766,2026-03-07
+232,ANDR-201,Ain Dar,Shut-in,0,2026-03-09
+233,ANDR-517,Ain Dar,Testing,223,2026-04-03
+234,ANDR-1222,Ain Dar,Locked Potential,0,2026-03-21
+235,ANDR-341,Ain Dar,Shut-in,0,2026-03-08
+236,ANDR-802,Ain Dar,On Production,1202,2026-03-18
+237,ANDR-1660,Ain Dar,On Production,1184,2026-04-03
+238,ANDR-294,Ain Dar,On Production,700,2026-03-05
+239,ANDR-1465,Ain Dar,Shut-in,0,2026-04-02
+240,ANDR-1657,Ain Dar,On Production,493,2026-04-03
+241,ANDR-1805,Ain Dar,On Production,1606,2026-03-29
+242,ANDR-883,Ain Dar,On Production,1585,2026-03-29
+243,ANDR-1832,Ain Dar,Standby,0,2026-03-08
+244,ANDR-892,Ain Dar,On Production,752,2026-03-10
+245,ANDR-1002,Ain Dar,On Production,1017,2026-03-08
+246,ANDR-1133,Ain Dar,Standby,0,2026-03-18
+247,ANDR-278,Ain Dar,Mothball,0,2026-04-01
+248,ANDR-1026,Ain Dar,Mothball,0,2026-03-31
+249,ANDR-908,Ain Dar,Shut-in,0,2026-03-10
+250,ANDR-431,Ain Dar,On Production,482,2026-03-30
+251,ANDR-1538,Ain Dar,On Production,682,2026-03-12
+252,ANDR-559,Ain Dar,On Production,1191,2026-03-19
+253,ANDR-1462,Ain Dar,Locked Potential,0,2026-03-19
+254,ANDR-729,Ain Dar,On Production,538,2026-03-12
+255,ANDR-1887,Ain Dar,On Production,1517,2026-03-26
+256,ANDR-131,Ain Dar,On Production,574,2026-03-20
+257,ANDR-1436,Ain Dar,On Production,671,2026-03-20
+258,ANDR-1454,Ain Dar,On Production,600,2026-03-07
+259,ANDR-722,Ain Dar,On Production,753,2026-04-02
+260,ANDR-739,Ain Dar,Shut-in,0,2026-03-15
+261,ANDR-1729,Ain Dar,On Production,1115,2026-03-23
+262,ANDR-1543,Ain Dar,On Production,1053,2026-03-21
+263,ANDR-818,Ain Dar,Standby,0,2026-04-01
+264,ANDR-1666,Ain Dar,On Production,1579,2026-03-12
+265,ANDR-1440,Ain Dar,Testing,311,2026-03-07
+266,ANDR-447,Ain Dar,On Production,1378,2026-03-23
+267,ANDR-197,Ain Dar,Shut-in,0,2026-03-25
+268,ANDR-781,Ain Dar,On Production,972,2026-03-24
+269,ANDR-1703,Ain Dar,Shut-in,0,2026-03-06
+270,ANDR-862,Ain Dar,Locked Potential,0,2026-03-12
+271,ANDR-233,Ain Dar,Standby,0,2026-03-18
+272,ANDR-675,Ain Dar,On Production,1600,2026-03-25
+273,ANDR-1433,Ain Dar,On Production,555,2026-03-05
+274,ANDR-419,Ain Dar,On Production,1170,2026-04-01
+275,ANDR-1217,Ain Dar,Mothball,0,2026-03-31
+276,ANDR-1229,Ain Dar,On Production,671,2026-03-24
+277,ANDR-1376,Ain Dar,Testing,138,2026-03-11
+278,ANDR-331,Ain Dar,On Production,1328,2026-03-08
+279,ANDR-1628,Ain Dar,Locked Potential,0,2026-03-14
+280,ANDR-1673,Ain Dar,On Production,997,2026-04-04
+281,ANDR-819,Ain Dar,On Production,1082,2026-03-06
+282,ANDR-106,Ain Dar,Standby,0,2026-03-30
+283,ANDR-1579,Ain Dar,Standby,0,2026-03-14
+284,ANDR-245,Ain Dar,On Production,512,2026-04-02
+285,ANDR-1220,Ain Dar,Testing,272,2026-03-22
+286,ANDR-261,Ain Dar,Mothball,0,2026-03-24
+287,ANDR-432,Ain Dar,On Production,1612,2026-03-16
+288,ANDR-153,Ain Dar,Standby,0,2026-03-31
+289,ANDR-721,Ain Dar,Shut-in,0,2026-03-21
+290,ANDR-320,Ain Dar,Testing,466,2026-03-19
+291,ANDR-794,Ain Dar,On Production,1446,2026-03-19
+292,ANDR-1046,Ain Dar,On Production,901,2026-03-23
+293,ANDR-1056,Ain Dar,On Production,465,2026-03-29
+294,ANDR-316,Ain Dar,On Production,731,2026-03-11
+295,ANDR-609,Ain Dar,Mothball,0,2026-03-12
+296,ANDR-232,Ain Dar,On Production,1228,2026-03-18
+297,ANDR-1512,Ain Dar,Mothball,0,2026-03-18
+298,ANDR-1825,Ain Dar,Shut-in,0,2026-03-24
+299,ANDR-1446,Ain Dar,On Production,488,2026-03-21
+300,ANDR-1882,Ain Dar,On Production,1091,2026-03-17
+301,ABQQ-514,Abqaiq,Shut-in,0,2026-03-13
+302,ABQQ-1296,Abqaiq,On Production,685,2026-03-23
+303,ABQQ-432,Abqaiq,On Production,801,2026-03-10
+304,ABQQ-1471,Abqaiq,On Production,1191,2026-04-02
+305,ABQQ-208,Abqaiq,On Production,948,2026-03-22
+306,ABQQ-1536,Abqaiq,On Production,611,2026-03-23
+307,ABQQ-1763,Abqaiq,Standby,0,2026-03-25
+308,ABQQ-897,Abqaiq,On Production,794,2026-04-02
+309,ABQQ-216,Abqaiq,On Production,1536,2026-03-19
+310,ABQQ-894,Abqaiq,Testing,258,2026-03-24
+311,ABQQ-1838,Abqaiq,On Production,752,2026-03-28
+312,ABQQ-362,Abqaiq,On Production,854,2026-03-30
+313,ABQQ-1778,Abqaiq,Locked Potential,0,2026-03-11
+314,ABQQ-1181,Abqaiq,On Production,1461,2026-03-21
+315,ABQQ-1697,Abqaiq,On Production,1606,2026-03-15
+316,ABQQ-1639,Abqaiq,Shut-in,0,2026-03-25
+317,ABQQ-1642,Abqaiq,Locked Potential,0,2026-03-25
+318,ABQQ-169,Abqaiq,On Production,1410,2026-03-21
+319,ABQQ-1815,Abqaiq,On Production,1012,2026-03-17
+320,ABQQ-619,Abqaiq,On Production,601,2026-03-26
+321,ABQQ-138,Abqaiq,Locked Potential,0,2026-04-03
+322,ABQQ-393,Abqaiq,Shut-in,0,2026-04-02
+323,ABQQ-1875,Abqaiq,On Production,634,2026-03-16
+324,ABQQ-1393,Abqaiq,On Production,1397,2026-03-17
+325,ABQQ-1810,Abqaiq,On Production,534,2026-03-21
+326,ABQQ-1585,Abqaiq,On Production,835,2026-03-25
+327,ABQQ-1513,Abqaiq,On Production,758,2026-03-05
+328,ABQQ-205,Abqaiq,Shut-in,0,2026-03-10
+329,ABQQ-1351,Abqaiq,On Production,622,2026-03-19
+330,ABQQ-1040,Abqaiq,On Production,957,2026-03-13
+331,ABQQ-549,Abqaiq,Shut-in,0,2026-03-19
+332,ABQQ-262,Abqaiq,Shut-in,0,2026-03-24
+333,ABQQ-389,Abqaiq,On Production,1243,2026-03-22
+334,ABQQ-1695,Abqaiq,On Production,557,2026-03-10
+335,ABQQ-1342,Abqaiq,On Production,584,2026-03-25
+336,ABQQ-794,Abqaiq,Testing,277,2026-03-26
+337,ABQQ-972,Abqaiq,On Production,757,2026-03-25
+338,ABQQ-779,Abqaiq,On Production,739,2026-03-06
+339,ABQQ-771,Abqaiq,On Production,1252,2026-03-31
+340,ABQQ-1960,Abqaiq,On Production,623,2026-03-26
+341,ABQQ-1658,Abqaiq,On Production,1122,2026-03-09
+342,ABQQ-819,Abqaiq,Standby,0,2026-03-09
+343,ABQQ-1701,Abqaiq,On Production,1528,2026-04-02
+344,ABQQ-1433,Abqaiq,On Production,1491,2026-03-24
+345,ABQQ-416,Abqaiq,Locked Potential,0,2026-03-30
+346,ABQQ-1349,Abqaiq,Testing,472,2026-03-20
+347,ABQQ-240,Abqaiq,On Production,767,2026-04-02
+348,ABQQ-907,Abqaiq,Shut-in,0,2026-04-01
+349,ABQQ-652,Abqaiq,On Production,1528,2026-04-03
+350,ABQQ-1897,Abqaiq,On Production,718,2026-03-16
+351,ABQQ-266,Abqaiq,Locked Potential,0,2026-03-30
+352,ABQQ-1789,Abqaiq,On Production,789,2026-03-12
+353,ABQQ-520,Abqaiq,On Production,1196,2026-03-14
+354,ABQQ-1992,Abqaiq,Shut-in,0,2026-03-21
+355,ABQQ-1770,Abqaiq,On Production,1369,2026-03-28
+356,ABQQ-1803,Abqaiq,On Production,1410,2026-03-07
+357,ABQQ-1376,Abqaiq,On Production,1618,2026-03-21
+358,ABQQ-388,Abqaiq,On Production,1232,2026-03-19
+359,ABQQ-265,Abqaiq,Standby,0,2026-03-09
+360,ABQQ-719,Abqaiq,On Production,733,2026-03-08
+361,ABQQ-756,Abqaiq,Locked Potential,0,2026-03-20
+362,ABQQ-1567,Abqaiq,Testing,132,2026-03-13
+363,ABQQ-1871,Abqaiq,On Production,705,2026-03-26
+364,ABQQ-264,Abqaiq,On Production,1008,2026-03-21
+365,ABQQ-1150,Abqaiq,On Production,1345,2026-04-02
+366,ABQQ-1227,Abqaiq,On Production,1373,2026-03-07
+367,ABQQ-127,Abqaiq,Mothball,0,2026-03-22
+368,ABQQ-614,Abqaiq,On Production,1215,2026-03-28
+369,ABQQ-183,Abqaiq,On Production,1217,2026-03-28
+370,ABQQ-201,Abqaiq,On Production,1136,2026-03-10
+371,ABQQ-139,Abqaiq,On Production,1037,2026-03-06
+372,ABQQ-1712,Abqaiq,On Production,734,2026-03-11
+373,ABQQ-1459,Abqaiq,On Production,460,2026-03-07
+374,ABQQ-253,Abqaiq,On Production,1573,2026-03-05
+375,ABQQ-1540,Abqaiq,Shut-in,0,2026-03-22
+376,ABQQ-395,Abqaiq,On Production,936,2026-03-26
+377,ABQQ-344,Abqaiq,On Production,1309,2026-03-15
+378,ABQQ-1468,Abqaiq,Mothball,0,2026-04-02
+379,ABQQ-611,Abqaiq,On Production,1547,2026-04-04
+380,ABQQ-1588,Abqaiq,On Production,945,2026-03-13
+381,ABQQ-539,Abqaiq,On Production,453,2026-03-16
+382,ABQQ-684,Abqaiq,On Production,1303,2026-03-30
+383,ABQQ-1087,Abqaiq,On Production,1522,2026-03-24
+384,ABQQ-638,Abqaiq,Shut-in,0,2026-03-18
+385,ABQQ-1399,Abqaiq,Mothball,0,2026-03-08
+386,ABQQ-750,Abqaiq,Testing,278,2026-03-24
+387,ABQQ-116,Abqaiq,On Production,1181,2026-03-10
+388,ABQQ-346,Abqaiq,On Production,662,2026-03-11
+389,ABQQ-1774,Abqaiq,Shut-in,0,2026-03-25
+390,ABQQ-460,Abqaiq,On Production,1568,2026-03-25
+391,ABQQ-1179,Abqaiq,On Production,1401,2026-03-13
+392,ABQQ-286,Abqaiq,On Production,726,2026-04-02
+393,ABQQ-1966,Abqaiq,Shut-in,0,2026-03-21
+394,ABQQ-306,Abqaiq,On Production,539,2026-03-10
+395,ABQQ-142,Abqaiq,On Production,1096,2026-03-06
+396,ABQQ-507,Abqaiq,On Production,1562,2026-03-20
+397,ABQQ-871,Abqaiq,Testing,411,2026-03-29
+398,ABQQ-982,Abqaiq,On Production,547,2026-03-08
+399,ABQQ-1279,Abqaiq,Testing,143,2026-03-10
+400,ABQQ-509,Abqaiq,On Production,1350,2026-03-07
+401,ABQQ-1347,Abqaiq,On Production,832,2026-03-20
+402,ABQQ-1531,Abqaiq,Shut-in,0,2026-03-27
+403,ABQQ-1744,Abqaiq,Shut-in,0,2026-03-22
+404,ABQQ-716,Abqaiq,On Production,819,2026-03-18
+405,ABQQ-776,Abqaiq,On Production,1055,2026-03-26
+406,ABQQ-834,Abqaiq,On Production,1322,2026-03-30
+407,ABQQ-1359,Abqaiq,On Production,1365,2026-04-03
+408,ABQQ-1933,Abqaiq,On Production,1172,2026-03-16
+409,ABQQ-1281,Abqaiq,On Production,567,2026-04-02
+410,ABQQ-1415,Abqaiq,On Production,1194,2026-03-19
+411,ABQQ-131,Abqaiq,On Production,742,2026-03-08
+412,ABQQ-1800,Abqaiq,Shut-in,0,2026-03-21
+413,ABQQ-168,Abqaiq,On Production,933,2026-03-11
+414,ABQQ-1370,Abqaiq,Testing,276,2026-03-05
+415,ABQQ-1619,Abqaiq,Shut-in,0,2026-03-31
+416,ABQQ-1971,Abqaiq,Shut-in,0,2026-03-24
+417,ABQQ-881,Abqaiq,On Production,607,2026-03-17
+418,ABQQ-475,Abqaiq,Standby,0,2026-03-23
+419,ABQQ-385,Abqaiq,On Production,961,2026-03-05
+420,ABQQ-853,Abqaiq,On Production,831,2026-03-20
+421,ABQQ-675,Abqaiq,On Production,691,2026-03-27
+422,ABQQ-1720,Abqaiq,On Production,1363,2026-03-29
+423,ABQQ-1292,Abqaiq,Testing,435,2026-03-06
+424,ABQQ-1204,Abqaiq,On Production,701,2026-03-31
+425,ABQQ-1462,Abqaiq,Shut-in,0,2026-03-30
+426,ABQQ-1455,Abqaiq,Shut-in,0,2026-04-02
+427,ABQQ-1990,Abqaiq,Testing,243,2026-03-14
+428,ABQQ-166,Abqaiq,On Production,1576,2026-03-18
+429,ABQQ-407,Abqaiq,Locked Potential,0,2026-03-08
+430,ABQQ-826,Abqaiq,On Production,806,2026-03-10
+431,ABQQ-329,Abqaiq,Standby,0,2026-04-01
+432,ABQQ-1811,Abqaiq,Testing,151,2026-03-28
+433,ABQQ-1026,Abqaiq,On Production,1189,2026-03-18
+434,ABQQ-1478,Abqaiq,On Production,1579,2026-03-31
+435,ABQQ-1088,Abqaiq,On Production,584,2026-03-26
+436,ABQQ-1538,Abqaiq,On Production,1291,2026-03-11
+437,ABQQ-688,Abqaiq,On Production,601,2026-03-31
+438,ABQQ-1657,Abqaiq,On Production,601,2026-03-21
+439,ABQQ-629,Abqaiq,Testing,256,2026-03-31
+440,ABQQ-1798,Abqaiq,On Production,1579,2026-03-15
+441,ABQQ-1786,Abqaiq,Testing,146,2026-03-22
+442,ABQQ-989,Abqaiq,On Production,563,2026-03-09
+443,ABQQ-256,Abqaiq,On Production,1072,2026-03-30
+444,ABQQ-631,Abqaiq,On Production,1031,2026-03-08
+445,ABQQ-301,Abqaiq,On Production,1578,2026-03-27
+446,ABQQ-410,Abqaiq,On Production,1542,2026-04-02
+447,ABQQ-272,Abqaiq,On Production,1639,2026-03-31
+448,ABQQ-739,Abqaiq,Standby,0,2026-03-12
+449,ABQQ-1345,Abqaiq,On Production,1604,2026-04-03
+450,ABQQ-1029,Abqaiq,On Production,616,2026-04-03
+451,ABQQ-1666,Abqaiq,On Production,881,2026-03-11
+452,ABQQ-1632,Abqaiq,On Production,512,2026-03-20
+453,ABQQ-1558,Abqaiq,On Production,1043,2026-03-15
+454,ABQQ-1494,Abqaiq,On Production,951,2026-03-10
+455,ABQQ-174,Abqaiq,On Production,572,2026-03-30
+456,ABQQ-595,Abqaiq,Shut-in,0,2026-03-21
+457,ABQQ-721,Abqaiq,On Production,744,2026-03-25
+458,ABQQ-1326,Abqaiq,On Production,1157,2026-03-23
+459,ABQQ-479,Abqaiq,On Production,1504,2026-03-18
+460,ABQQ-347,Abqaiq,Testing,318,2026-04-01
+461,ABQQ-353,Abqaiq,On Production,738,2026-04-01
+462,ABQQ-493,Abqaiq,On Production,1306,2026-03-28
+463,ABQQ-1923,Abqaiq,On Production,777,2026-03-09
+464,ABQQ-691,Abqaiq,Shut-in,0,2026-03-12
+465,ABQQ-627,Abqaiq,On Production,1406,2026-03-20
+466,ABQQ-1509,Abqaiq,On Production,497,2026-04-02
+467,ABQQ-1517,Abqaiq,On Production,1386,2026-03-05
+468,ABQQ-697,Abqaiq,On Production,1172,2026-04-03
+469,ABQQ-606,Abqaiq,On Production,1413,2026-03-26
+470,ABQQ-967,Abqaiq,On Production,670,2026-03-22
+471,ABQQ-370,Abqaiq,On Production,1199,2026-03-11
+472,ABQQ-146,Abqaiq,On Production,1270,2026-04-03
+473,ABQQ-1199,Abqaiq,On Production,1192,2026-03-18
+474,ABQQ-495,Abqaiq,On Production,1482,2026-03-21
+475,ABQQ-1286,Abqaiq,Locked Potential,0,2026-03-09
+476,ABQQ-1696,Abqaiq,On Production,693,2026-03-31
+477,ABQQ-1403,Abqaiq,Shut-in,0,2026-03-24
+478,ABQQ-1374,Abqaiq,On Production,745,2026-03-29
+479,ABQQ-1411,Abqaiq,On Production,1474,2026-04-03
+480,ABQQ-1823,Abqaiq,Standby,0,2026-03-20
+481,ABQQ-252,Abqaiq,On Production,1505,2026-03-31
+482,ABQQ-727,Abqaiq,On Production,1102,2026-03-30
+483,ABQQ-731,Abqaiq,On Production,1062,2026-03-17
+484,ABQQ-948,Abqaiq,Testing,340,2026-03-18
+485,ABQQ-676,Abqaiq,On Production,1063,2026-03-20
+486,ABQQ-1377,Abqaiq,Locked Potential,0,2026-03-25
+487,ABQQ-1426,Abqaiq,On Production,1645,2026-03-26
+488,ABQQ-1742,Abqaiq,On Production,504,2026-03-16
+489,ABQQ-1794,Abqaiq,Shut-in,0,2026-03-17
+490,ABQQ-1738,Abqaiq,Shut-in,0,2026-04-03
+491,ABQQ-1174,Abqaiq,Testing,348,2026-03-15
+492,ABQQ-1793,Abqaiq,On Production,1228,2026-03-31
+493,ABQQ-1248,Abqaiq,On Production,514,2026-03-17
+494,ABQQ-1112,Abqaiq,On Production,840,2026-04-04
+495,ABQQ-528,Abqaiq,On Production,760,2026-03-22
+496,ABQQ-1420,Abqaiq,On Production,1477,2026-03-11
+497,ABQQ-1482,Abqaiq,On Production,577,2026-03-13
+498,ABQQ-312,Abqaiq,On Production,1598,2026-03-25
+499,ABQQ-1489,Abqaiq,Shut-in,0,2026-03-19
+500,ABQQ-277,Abqaiq,On Production,1391,2026-03-06
