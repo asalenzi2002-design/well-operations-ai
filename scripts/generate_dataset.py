@@ -743,27 +743,18 @@ def print_report(wells: list, dn_master: list) -> None:
             print(f"    {k}: {v}")
 
     # Overlap matrix
-    dn_well_ids  = dn_wells
-    camp_ids     = {w["well_id"] for w in wells if w.get("campaign_id")}
-    cl_ids       = {w["well_id"] for w in wells if w.get("cluster_id")}
-    idle_ids     = {w["well_id"] for w in wells
-                    if w["production_status"] in ("Shut-in", "Standby", "Locked Potential", "Mothball")}
+    camp_ids = {w["well_id"] for w in wells if w.get("campaign_id")}
+    cl_ids   = {w["well_id"] for w in wells if w.get("cluster_id")}
+    idle_ids = {w["well_id"] for w in wells
+                if w["production_status"] in ("Shut-in", "Standby", "Locked Potential", "Mothball")}
 
-    def ov(dn, cam, cl):
-        s = dn_well_ids if dn else set()
-        if dn:  base = dn_well_ids
-        elif cam: base = camp_ids
-        else:    base = cl_ids
-        cond = set(wells_by_id.keys())
-        if dn:  cond &= dn_well_ids
-        else:   cond -= dn_well_ids
-        if cam: cond &= camp_ids
-        else:   cond -= camp_ids
-        if cl:  cond &= cl_ids
-        else:   cond -= cl_ids
-        return len(cond - idle_ids)
-
-    wells_by_id = {w["well_id"]: w for w in wells}
+    def ov(has_dn: bool, has_cam: bool, has_cl: bool) -> int:
+        """Return count of non-idle wells matching all three context flags."""
+        result = set(w["well_id"] for w in wells)
+        result = (result & dn_wells)  if has_dn  else (result - dn_wells)
+        result = (result & camp_ids)  if has_cam else (result - camp_ids)
+        result = (result & cl_ids)    if has_cl  else (result - cl_ids)
+        return len(result - idle_ids)
 
     print("\n  Overlap matrix (excl. idle):")
     print(f"    DN+Campaign+Cluster : {ov(True,  True,  True)}")
