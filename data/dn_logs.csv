@@ -1,51 +1,1022 @@
 dn_id,status_update,updated_by,update_date
-1,DN not issuing,FOEU,2026-03-16
-1,FOEU not issuing package,FOEU,2026-03-26
-2,DN not issuing,FOEU,2026-03-13
-2,FOEU not issuing package,FOEU,2026-03-18
-3,FOEU not issuing package,FOEU,2026-02-13
-3,Under RFI,Inspection,2026-02-17
-4,DN not issuing,FOEU,2026-03-08
-4,FOEU not issuing package,FOEU,2026-03-13
-5,DN not issuing,FOEU,2026-03-14
-5,DN not issuing,FOEU,2026-03-19
-6,Depressurizing,Field Operations,2026-03-04
-6,Execution started,Maintenance Planner (CRD),2026-03-14
-7,Execution started,Maintenance Planner (CRD),2026-02-18
-7,Completed 40%,Maintenance Planner (CRD),2026-02-23
-8,Depressurizing,Field Operations,2026-03-16
-8,Execution started,Maintenance (CFC),2026-03-24
-9,Execution started,Maintenance (CFC),2026-03-19
-9,Completed 40%,Maintenance (CFC),2026-03-23
-10,Execution started,Maintenance Planner (CRD),2026-02-21
-10,Completed 40%,Maintenance Planner (CRD),2026-02-25
-11,Execution started,Maintenance Planner (CRD),2026-03-16
-11,Completed 40%,Maintenance Planner (CRD),2026-03-19
-12,Execution started,Maintenance Planner (CRD),2026-02-05
-12,Completed 40%,Maintenance Planner (CRD),2026-02-07
-13,DN not issuing,FOEU,2026-03-13
-13,FOEU not issuing package,FOEU,2026-03-24
-14,Completed 40%,Maintenance (CFC),2026-03-23
-14,Closed,Inspection,2026-03-29
-15,Execution started,Maintenance (CFC),2026-02-27
-15,Completed 40%,Maintenance (CFC),2026-03-03
-16,Depressurizing,Field Operations,2026-02-07
-16,Execution started,Maintenance (CFC),2026-02-11
-17,Completed 40%,Maintenance Planner (CRD),2026-02-19
-17,Closed,Inspection,2026-02-22
-18,Execution started,Field Operations,2026-02-16
-18,Completed 40%,Field Operations,2026-02-18
-19,Execution started,Maintenance Planner (CRD),2026-03-23
-19,Completed 40%,Maintenance Planner (CRD),2026-03-30
-20,Execution started,Maintenance (CFC),2026-02-26
-20,Completed 40%,Maintenance (CFC),2026-03-05
-21,DN not issuing,FOEU,2026-02-23
-21,DN not issuing,FOEU,2026-03-01
-22,Under RFI,Inspection,2026-02-18
-22,Depressurizing,Field Operations,2026-02-23
-23,Execution started,Maintenance Planner (CRD),2026-02-25
-23,Completed 40%,Maintenance Planner (CRD),2026-03-04
-24,Under RFI,Inspection,2026-02-25
-24,Depressurizing,Field Operations,2026-03-04
-25,Execution started,Maintenance Planner (CRD),2026-02-10
-25,Completed 40%,Maintenance Planner (CRD),2026-02-13
+1,DN not issuing,FOEU,2025-11-10
+1,Under Engineering Review,FOEU,2025-11-30
+1,Package Ready,FOEU,2025-12-12
+1,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-22
+1,Execution started,Maintenance Planner (CRD),2026-01-03
+1,Under Inspection,Inspection,2026-01-15
+2,DN not issuing,FOEU,2026-01-24
+2,Under Engineering Review,FOEU,2026-02-05
+2,Package Ready,FOEU,2026-02-11
+2,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-03
+2,Execution started,Maintenance Planner (CRD),2026-03-18
+2,Under Inspection,Inspection,2026-04-02
+3,DN not issuing,FOEU,2026-01-25
+3,FOEU not issuing package,FOEU,2026-02-08
+3,Under Engineering Review,FOEU,2026-02-25
+4,DN not issuing,FOEU,2026-02-23
+4,FOEU not issuing package,FOEU,2026-03-02
+4,Under Engineering Review,FOEU,2026-03-08
+4,Package Ready,FOEU,2026-03-18
+4,Waiting CFC Execution,Maintenance (CFC),2026-03-28
+4,Execution started,Maintenance (CFC),2026-04-01
+4,Under Inspection,Inspection,2026-04-04
+4,Completed,Inspection,2026-04-04
+4,Closed,Field Operations,2026-04-04
+5,DN not issuing,FOEU,2025-12-03
+5,FOEU not issuing package,FOEU,2025-12-21
+5,Under Engineering Review,FOEU,2025-12-30
+5,Package Ready,FOEU,2026-01-11
+6,DN not issuing,FOEU,2025-10-24
+6,FOEU not issuing package,FOEU,2025-11-01
+6,Under Engineering Review,FOEU,2025-11-17
+6,Package Ready,FOEU,2025-11-25
+6,Waiting CFC Execution,Maintenance (CFC),2025-11-29
+6,Execution started,Maintenance (CFC),2025-12-14
+6,Under Inspection,Inspection,2026-01-01
+7,DN not issuing,FOEU,2026-04-01
+7,Under Engineering Review,FOEU,2026-04-04
+7,Package Ready,FOEU,2026-04-04
+8,DN not issuing,FOEU,2025-12-02
+8,FOEU not issuing package,FOEU,2025-12-15
+8,Under Engineering Review,FOEU,2025-12-23
+8,Package Ready,FOEU,2026-01-09
+8,Waiting CFC Execution,Maintenance (CFC),2026-01-20
+8,Execution started,Maintenance (CFC),2026-01-28
+9,DN not issuing,FOEU,2026-01-22
+9,Under Engineering Review,FOEU,2026-02-08
+9,Package Ready,FOEU,2026-02-19
+9,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-04
+10,DN not issuing,FOEU,2026-02-03
+10,FOEU not issuing package,FOEU,2026-02-20
+10,Under Engineering Review,FOEU,2026-03-04
+10,Package Ready,FOEU,2026-03-12
+10,Waiting CFC Execution,Maintenance (CFC),2026-03-27
+10,Execution started,Maintenance (CFC),2026-04-04
+11,DN not issuing,FOEU,2025-10-22
+12,DN not issuing,FOEU,2026-03-16
+12,Under Engineering Review,FOEU,2026-04-03
+12,Package Ready,FOEU,2026-04-04
+12,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+13,DN not issuing,FOEU,2025-10-26
+13,FOEU not issuing package,FOEU,2025-10-31
+14,DN not issuing,FOEU,2026-03-28
+14,FOEU not issuing package,FOEU,2026-04-04
+14,Under Engineering Review,FOEU,2026-04-04
+14,Package Ready,FOEU,2026-04-04
+15,DN not issuing,FOEU,2025-10-31
+15,FOEU not issuing package,FOEU,2025-11-17
+15,Under Engineering Review,FOEU,2025-11-21
+15,Package Ready,FOEU,2025-12-08
+16,DN not issuing,FOEU,2026-04-04
+16,Under Engineering Review,FOEU,2026-04-04
+16,Package Ready,FOEU,2026-04-04
+16,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+17,DN not issuing,FOEU,2025-12-12
+18,DN not issuing,FOEU,2026-01-14
+18,Under Engineering Review,FOEU,2026-01-29
+18,Package Ready,FOEU,2026-02-03
+18,Waiting CRD Execution,Maintenance Planner (CRD),2026-02-23
+19,DN not issuing,FOEU,2026-02-28
+19,FOEU not issuing package,FOEU,2026-03-03
+19,Under Engineering Review,FOEU,2026-03-06
+19,Package Ready,FOEU,2026-03-18
+19,Waiting CFC Execution,Maintenance (CFC),2026-04-04
+19,Execution started,Maintenance (CFC),2026-04-04
+19,Under Inspection,Inspection,2026-04-04
+20,DN not issuing,FOEU,2025-12-14
+20,FOEU not issuing package,FOEU,2025-12-18
+20,Under Engineering Review,FOEU,2026-01-03
+20,Package Ready,FOEU,2026-01-06
+20,Waiting CFC Execution,Maintenance (CFC),2026-01-16
+21,DN not issuing,FOEU,2026-02-11
+21,FOEU not issuing package,FOEU,2026-03-03
+21,Under Engineering Review,FOEU,2026-03-12
+21,Package Ready,FOEU,2026-03-16
+21,Waiting CFC Execution,Maintenance (CFC),2026-03-23
+21,Execution started,Maintenance (CFC),2026-04-04
+21,Under Inspection,Inspection,2026-04-04
+21,Completed,Inspection,2026-04-04
+22,DN not issuing,FOEU,2025-11-15
+22,Under Engineering Review,FOEU,2025-12-04
+22,Package Ready,FOEU,2025-12-14
+22,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-30
+22,Execution started,Maintenance Planner (CRD),2026-01-11
+22,Under Inspection,Inspection,2026-01-22
+22,Completed,Inspection,2026-01-26
+23,DN not issuing,FOEU,2025-11-09
+23,FOEU not issuing package,FOEU,2025-11-24
+23,Under Engineering Review,FOEU,2025-12-13
+23,Package Ready,FOEU,2025-12-26
+23,Waiting CFC Execution,Maintenance (CFC),2026-01-11
+23,Execution started,Maintenance (CFC),2026-01-27
+23,Under Inspection,Inspection,2026-02-03
+24,DN not issuing,FOEU,2025-12-23
+24,FOEU not issuing package,FOEU,2026-01-12
+24,Under Engineering Review,FOEU,2026-01-31
+25,DN not issuing,FOEU,2026-01-09
+26,DN not issuing,FOEU,2025-12-06
+26,FOEU not issuing package,FOEU,2025-12-15
+26,Under Engineering Review,FOEU,2025-12-24
+26,Package Ready,FOEU,2025-12-30
+27,DN not issuing,FOEU,2026-02-11
+27,Under Engineering Review,FOEU,2026-03-03
+27,Package Ready,FOEU,2026-03-16
+27,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-28
+27,Execution started,Maintenance Planner (CRD),2026-04-04
+27,Under Inspection,Inspection,2026-04-04
+27,Completed,Inspection,2026-04-04
+27,Closed,Field Operations,2026-04-04
+28,DN not issuing,FOEU,2026-03-23
+28,Under Engineering Review,FOEU,2026-04-01
+28,Package Ready,FOEU,2026-04-04
+28,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+28,Execution started,Maintenance Planner (CRD),2026-04-04
+28,Under Inspection,Inspection,2026-04-04
+28,Completed,Inspection,2026-04-04
+28,Closed,Field Operations,2026-04-04
+29,DN not issuing,FOEU,2026-03-06
+29,Under Engineering Review,FOEU,2026-03-24
+30,DN not issuing,FOEU,2026-02-15
+30,Under Engineering Review,FOEU,2026-02-23
+30,Package Ready,FOEU,2026-03-09
+30,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-17
+30,Execution started,Maintenance Planner (CRD),2026-03-24
+30,Under Inspection,Inspection,2026-04-04
+31,DN not issuing,FOEU,2025-11-25
+31,FOEU not issuing package,FOEU,2025-11-28
+31,Under Engineering Review,FOEU,2025-12-14
+32,DN not issuing,FOEU,2025-11-07
+32,Under Engineering Review,FOEU,2025-11-23
+32,Package Ready,FOEU,2025-11-26
+32,Waiting CRD Execution,Maintenance Planner (CRD),2025-11-29
+33,DN not issuing,FOEU,2025-12-04
+33,Under Engineering Review,FOEU,2025-12-12
+33,Package Ready,FOEU,2025-12-18
+34,DN not issuing,FOEU,2026-02-16
+34,FOEU not issuing package,FOEU,2026-02-27
+34,Under Engineering Review,FOEU,2026-03-14
+34,Package Ready,FOEU,2026-03-19
+35,DN not issuing,FOEU,2026-02-02
+35,FOEU not issuing package,FOEU,2026-02-17
+36,DN not issuing,FOEU,2026-03-26
+36,Under Engineering Review,FOEU,2026-04-04
+36,Package Ready,FOEU,2026-04-04
+36,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+36,Execution started,Maintenance Planner (CRD),2026-04-04
+36,Under Inspection,Inspection,2026-04-04
+37,DN not issuing,FOEU,2026-02-14
+37,FOEU not issuing package,FOEU,2026-02-25
+37,Under Engineering Review,FOEU,2026-03-17
+37,Package Ready,FOEU,2026-03-21
+37,Waiting CFC Execution,Maintenance (CFC),2026-03-29
+37,Execution started,Maintenance (CFC),2026-04-04
+37,Under Inspection,Inspection,2026-04-04
+37,Completed,Inspection,2026-04-04
+37,Closed,Field Operations,2026-04-04
+38,DN not issuing,FOEU,2026-03-31
+38,Under Engineering Review,FOEU,2026-04-04
+38,Package Ready,FOEU,2026-04-04
+38,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+38,Execution started,Maintenance Planner (CRD),2026-04-04
+39,DN not issuing,FOEU,2025-12-13
+39,FOEU not issuing package,FOEU,2025-12-23
+39,Under Engineering Review,FOEU,2025-12-28
+39,Package Ready,FOEU,2026-01-10
+39,Waiting CFC Execution,Maintenance (CFC),2026-01-25
+39,Execution started,Maintenance (CFC),2026-02-07
+39,Under Inspection,Inspection,2026-02-10
+39,Completed,Inspection,2026-02-21
+40,DN not issuing,FOEU,2026-01-18
+40,FOEU not issuing package,FOEU,2026-01-23
+40,Under Engineering Review,FOEU,2026-02-04
+40,Package Ready,FOEU,2026-02-14
+40,Waiting CFC Execution,Maintenance (CFC),2026-02-19
+40,Execution started,Maintenance (CFC),2026-02-24
+40,Under Inspection,Inspection,2026-03-07
+41,DN not issuing,FOEU,2025-12-29
+41,FOEU not issuing package,FOEU,2026-01-10
+41,Under Engineering Review,FOEU,2026-01-27
+41,Package Ready,FOEU,2026-02-10
+41,Waiting CFC Execution,Maintenance (CFC),2026-02-21
+41,Execution started,Maintenance (CFC),2026-02-27
+42,DN not issuing,FOEU,2026-03-26
+42,FOEU not issuing package,FOEU,2026-04-04
+42,Under Engineering Review,FOEU,2026-04-04
+42,Package Ready,FOEU,2026-04-04
+42,Waiting CFC Execution,Maintenance (CFC),2026-04-04
+42,Execution started,Maintenance (CFC),2026-04-04
+43,DN not issuing,FOEU,2025-11-17
+43,FOEU not issuing package,FOEU,2025-11-24
+43,Under Engineering Review,FOEU,2025-12-05
+43,Package Ready,FOEU,2025-12-17
+43,Waiting CFC Execution,Maintenance (CFC),2025-12-28
+43,Execution started,Maintenance (CFC),2026-01-15
+43,Under Inspection,Inspection,2026-01-22
+44,DN not issuing,FOEU,2026-01-22
+44,Under Engineering Review,FOEU,2026-02-08
+44,Package Ready,FOEU,2026-02-21
+44,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-09
+44,Execution started,Maintenance Planner (CRD),2026-03-16
+44,Under Inspection,Inspection,2026-03-28
+44,Completed,Inspection,2026-04-04
+45,DN not issuing,FOEU,2025-11-23
+45,Under Engineering Review,FOEU,2025-12-07
+45,Package Ready,FOEU,2025-12-13
+45,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-22
+46,DN not issuing,FOEU,2026-02-15
+46,Under Engineering Review,FOEU,2026-03-03
+46,Package Ready,FOEU,2026-03-21
+46,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-28
+47,DN not issuing,FOEU,2026-04-01
+47,Under Engineering Review,FOEU,2026-04-04
+47,Package Ready,FOEU,2026-04-04
+47,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+47,Execution started,Maintenance Planner (CRD),2026-04-04
+47,Under Inspection,Inspection,2026-04-04
+48,DN not issuing,FOEU,2025-10-17
+48,Under Engineering Review,FOEU,2025-10-31
+48,Package Ready,FOEU,2025-11-08
+48,Waiting CRD Execution,Maintenance Planner (CRD),2025-11-12
+48,Execution started,Maintenance Planner (CRD),2025-11-27
+48,Under Inspection,Inspection,2025-12-10
+48,Completed,Inspection,2025-12-26
+49,DN not issuing,FOEU,2025-12-30
+49,FOEU not issuing package,FOEU,2026-01-06
+49,Under Engineering Review,FOEU,2026-01-20
+49,Package Ready,FOEU,2026-01-23
+49,Waiting CFC Execution,Maintenance (CFC),2026-02-10
+49,Execution started,Maintenance (CFC),2026-02-16
+50,DN not issuing,FOEU,2026-03-19
+50,FOEU not issuing package,FOEU,2026-04-04
+50,Under Engineering Review,FOEU,2026-04-04
+50,Package Ready,FOEU,2026-04-04
+50,Waiting CFC Execution,Maintenance (CFC),2026-04-04
+50,Execution started,Maintenance (CFC),2026-04-04
+50,Under Inspection,Inspection,2026-04-04
+50,Completed,Inspection,2026-04-04
+50,Closed,Field Operations,2026-04-04
+51,DN not issuing,FOEU,2026-01-19
+51,Under Engineering Review,FOEU,2026-01-22
+51,Package Ready,FOEU,2026-02-04
+52,DN not issuing,FOEU,2025-12-13
+52,FOEU not issuing package,FOEU,2025-12-29
+52,Under Engineering Review,FOEU,2026-01-15
+52,Package Ready,FOEU,2026-01-25
+53,DN not issuing,FOEU,2026-02-25
+53,FOEU not issuing package,FOEU,2026-03-14
+53,Under Engineering Review,FOEU,2026-03-30
+53,Package Ready,FOEU,2026-04-04
+53,Waiting CFC Execution,Maintenance (CFC),2026-04-04
+53,Execution started,Maintenance (CFC),2026-04-04
+53,Under Inspection,Inspection,2026-04-04
+54,DN not issuing,FOEU,2025-10-26
+54,Under Engineering Review,FOEU,2025-11-03
+54,Package Ready,FOEU,2025-11-17
+54,Waiting CRD Execution,Maintenance Planner (CRD),2025-11-30
+54,Execution started,Maintenance Planner (CRD),2025-12-09
+54,Under Inspection,Inspection,2025-12-26
+54,Completed,Inspection,2026-01-01
+55,DN not issuing,FOEU,2025-11-09
+55,Under Engineering Review,FOEU,2025-11-23
+55,Package Ready,FOEU,2025-12-07
+55,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-24
+55,Execution started,Maintenance Planner (CRD),2026-01-01
+55,Under Inspection,Inspection,2026-01-13
+56,DN not issuing,FOEU,2025-10-26
+56,FOEU not issuing package,FOEU,2025-11-01
+56,Under Engineering Review,FOEU,2025-11-09
+56,Package Ready,FOEU,2025-11-23
+57,DN not issuing,FOEU,2025-12-25
+57,Under Engineering Review,FOEU,2026-01-14
+58,DN not issuing,FOEU,2026-01-18
+58,FOEU not issuing package,FOEU,2026-02-07
+58,Under Engineering Review,FOEU,2026-02-26
+59,DN not issuing,FOEU,2025-12-10
+59,Under Engineering Review,FOEU,2025-12-22
+60,DN not issuing,FOEU,2026-02-10
+60,FOEU not issuing package,FOEU,2026-02-28
+60,Under Engineering Review,FOEU,2026-03-20
+60,Package Ready,FOEU,2026-04-04
+61,DN not issuing,FOEU,2025-12-04
+61,Under Engineering Review,FOEU,2025-12-24
+61,Package Ready,FOEU,2026-01-02
+61,Waiting CRD Execution,Maintenance Planner (CRD),2026-01-18
+61,Execution started,Maintenance Planner (CRD),2026-01-24
+61,Under Inspection,Inspection,2026-02-03
+61,Completed,Inspection,2026-02-15
+62,DN not issuing,FOEU,2025-12-15
+62,FOEU not issuing package,FOEU,2026-01-01
+62,Under Engineering Review,FOEU,2026-01-07
+62,Package Ready,FOEU,2026-01-17
+62,Waiting CFC Execution,Maintenance (CFC),2026-01-26
+63,DN not issuing,FOEU,2025-11-06
+63,Under Engineering Review,FOEU,2025-11-15
+63,Package Ready,FOEU,2025-11-24
+63,Waiting CRD Execution,Maintenance Planner (CRD),2025-11-28
+63,Execution started,Maintenance Planner (CRD),2025-12-12
+63,Under Inspection,Inspection,2026-01-01
+63,Completed,Inspection,2026-01-12
+63,Closed,Field Operations,2026-02-01
+64,DN not issuing,FOEU,2026-02-08
+64,Under Engineering Review,FOEU,2026-02-14
+64,Package Ready,FOEU,2026-02-21
+64,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-09
+64,Execution started,Maintenance Planner (CRD),2026-03-13
+64,Under Inspection,Inspection,2026-03-24
+64,Completed,Inspection,2026-03-31
+65,DN not issuing,FOEU,2026-02-15
+65,FOEU not issuing package,FOEU,2026-03-05
+65,Under Engineering Review,FOEU,2026-03-12
+65,Package Ready,FOEU,2026-03-23
+66,DN not issuing,FOEU,2025-12-15
+67,DN not issuing,FOEU,2025-12-14
+67,Under Engineering Review,FOEU,2025-12-31
+67,Package Ready,FOEU,2026-01-14
+67,Waiting CRD Execution,Maintenance Planner (CRD),2026-01-19
+67,Execution started,Maintenance Planner (CRD),2026-02-08
+67,Under Inspection,Inspection,2026-02-23
+68,DN not issuing,FOEU,2025-12-03
+68,Under Engineering Review,FOEU,2025-12-16
+68,Package Ready,FOEU,2025-12-20
+68,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-24
+68,Execution started,Maintenance Planner (CRD),2025-12-30
+69,DN not issuing,FOEU,2026-04-03
+70,DN not issuing,FOEU,2026-02-24
+70,Under Engineering Review,FOEU,2026-03-04
+70,Package Ready,FOEU,2026-03-15
+70,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-20
+70,Execution started,Maintenance Planner (CRD),2026-04-03
+70,Under Inspection,Inspection,2026-04-04
+71,DN not issuing,FOEU,2026-01-11
+71,FOEU not issuing package,FOEU,2026-01-21
+71,Under Engineering Review,FOEU,2026-02-06
+72,DN not issuing,FOEU,2026-02-19
+72,FOEU not issuing package,FOEU,2026-03-10
+72,Under Engineering Review,FOEU,2026-03-27
+72,Package Ready,FOEU,2026-03-30
+72,Waiting CFC Execution,Maintenance (CFC),2026-04-02
+72,Execution started,Maintenance (CFC),2026-04-04
+73,DN not issuing,FOEU,2025-10-24
+73,Under Engineering Review,FOEU,2025-10-29
+73,Package Ready,FOEU,2025-11-04
+73,Waiting CRD Execution,Maintenance Planner (CRD),2025-11-10
+74,DN not issuing,FOEU,2026-01-04
+74,FOEU not issuing package,FOEU,2026-01-09
+74,Under Engineering Review,FOEU,2026-01-28
+74,Package Ready,FOEU,2026-01-31
+74,Waiting CFC Execution,Maintenance (CFC),2026-02-08
+74,Execution started,Maintenance (CFC),2026-02-25
+74,Under Inspection,Inspection,2026-03-11
+74,Completed,Inspection,2026-03-20
+74,Closed,Field Operations,2026-03-27
+75,DN not issuing,FOEU,2026-02-14
+75,Under Engineering Review,FOEU,2026-03-01
+75,Package Ready,FOEU,2026-03-15
+76,DN not issuing,FOEU,2026-03-10
+76,Under Engineering Review,FOEU,2026-03-30
+76,Package Ready,FOEU,2026-04-04
+76,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+77,DN not issuing,FOEU,2026-02-23
+77,Under Engineering Review,FOEU,2026-02-27
+77,Package Ready,FOEU,2026-03-09
+77,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-27
+77,Execution started,Maintenance Planner (CRD),2026-04-04
+77,Under Inspection,Inspection,2026-04-04
+77,Completed,Inspection,2026-04-04
+78,DN not issuing,FOEU,2026-01-29
+78,Under Engineering Review,FOEU,2026-02-12
+78,Package Ready,FOEU,2026-03-04
+78,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-12
+79,DN not issuing,FOEU,2026-04-04
+79,FOEU not issuing package,FOEU,2026-04-04
+79,Under Engineering Review,FOEU,2026-04-04
+79,Package Ready,FOEU,2026-04-04
+79,Waiting CFC Execution,Maintenance (CFC),2026-04-04
+79,Execution started,Maintenance (CFC),2026-04-04
+79,Under Inspection,Inspection,2026-04-04
+80,DN not issuing,FOEU,2025-10-27
+80,Under Engineering Review,FOEU,2025-11-03
+80,Package Ready,FOEU,2025-11-14
+80,Waiting CRD Execution,Maintenance Planner (CRD),2025-11-19
+80,Execution started,Maintenance Planner (CRD),2025-12-01
+80,Under Inspection,Inspection,2025-12-06
+81,DN not issuing,FOEU,2026-01-10
+81,Under Engineering Review,FOEU,2026-01-20
+81,Package Ready,FOEU,2026-01-24
+81,Waiting CRD Execution,Maintenance Planner (CRD),2026-02-03
+81,Execution started,Maintenance Planner (CRD),2026-02-08
+81,Under Inspection,Inspection,2026-02-24
+81,Completed,Inspection,2026-03-02
+82,DN not issuing,FOEU,2026-01-22
+82,FOEU not issuing package,FOEU,2026-01-25
+82,Under Engineering Review,FOEU,2026-02-02
+83,DN not issuing,FOEU,2026-03-04
+83,Under Engineering Review,FOEU,2026-03-10
+83,Package Ready,FOEU,2026-03-13
+84,DN not issuing,FOEU,2025-12-16
+84,FOEU not issuing package,FOEU,2025-12-24
+84,Under Engineering Review,FOEU,2026-01-07
+84,Package Ready,FOEU,2026-01-15
+84,Waiting CFC Execution,Maintenance (CFC),2026-01-26
+84,Execution started,Maintenance (CFC),2026-02-01
+85,DN not issuing,FOEU,2026-02-08
+85,FOEU not issuing package,FOEU,2026-02-18
+85,Under Engineering Review,FOEU,2026-02-22
+85,Package Ready,FOEU,2026-03-12
+85,Waiting CFC Execution,Maintenance (CFC),2026-03-26
+85,Execution started,Maintenance (CFC),2026-04-04
+85,Under Inspection,Inspection,2026-04-04
+85,Completed,Inspection,2026-04-04
+86,DN not issuing,FOEU,2025-11-24
+86,FOEU not issuing package,FOEU,2025-12-10
+86,Under Engineering Review,FOEU,2025-12-23
+86,Package Ready,FOEU,2026-01-03
+86,Waiting CFC Execution,Maintenance (CFC),2026-01-08
+86,Execution started,Maintenance (CFC),2026-01-22
+86,Under Inspection,Inspection,2026-01-28
+86,Completed,Inspection,2026-02-16
+86,Closed,Field Operations,2026-02-20
+87,DN not issuing,FOEU,2026-01-04
+87,FOEU not issuing package,FOEU,2026-01-17
+87,Under Engineering Review,FOEU,2026-01-22
+88,DN not issuing,FOEU,2025-12-02
+88,FOEU not issuing package,FOEU,2025-12-05
+88,Under Engineering Review,FOEU,2025-12-15
+88,Package Ready,FOEU,2026-01-04
+88,Waiting CFC Execution,Maintenance (CFC),2026-01-18
+88,Execution started,Maintenance (CFC),2026-01-21
+88,Under Inspection,Inspection,2026-02-03
+88,Completed,Inspection,2026-02-06
+88,Closed,Field Operations,2026-02-21
+89,DN not issuing,FOEU,2026-03-25
+89,Under Engineering Review,FOEU,2026-04-04
+89,Package Ready,FOEU,2026-04-04
+89,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+90,DN not issuing,FOEU,2026-04-04
+90,FOEU not issuing package,FOEU,2026-04-04
+90,Under Engineering Review,FOEU,2026-04-04
+90,Package Ready,FOEU,2026-04-04
+91,DN not issuing,FOEU,2025-12-27
+91,FOEU not issuing package,FOEU,2026-01-11
+91,Under Engineering Review,FOEU,2026-01-24
+92,DN not issuing,FOEU,2026-02-18
+92,FOEU not issuing package,FOEU,2026-02-26
+92,Under Engineering Review,FOEU,2026-03-15
+93,DN not issuing,FOEU,2026-03-14
+93,Under Engineering Review,FOEU,2026-03-31
+93,Package Ready,FOEU,2026-04-04
+93,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+93,Execution started,Maintenance Planner (CRD),2026-04-04
+94,DN not issuing,FOEU,2026-02-27
+94,FOEU not issuing package,FOEU,2026-03-08
+94,Under Engineering Review,FOEU,2026-03-21
+94,Package Ready,FOEU,2026-03-28
+94,Waiting CFC Execution,Maintenance (CFC),2026-04-02
+94,Execution started,Maintenance (CFC),2026-04-04
+94,Under Inspection,Inspection,2026-04-04
+94,Completed,Inspection,2026-04-04
+94,Closed,Field Operations,2026-04-04
+95,DN not issuing,FOEU,2026-04-04
+95,FOEU not issuing package,FOEU,2026-04-04
+95,Under Engineering Review,FOEU,2026-04-04
+95,Package Ready,FOEU,2026-04-04
+95,Waiting CFC Execution,Maintenance (CFC),2026-04-04
+95,Execution started,Maintenance (CFC),2026-04-04
+95,Under Inspection,Inspection,2026-04-04
+96,DN not issuing,FOEU,2026-04-04
+96,FOEU not issuing package,FOEU,2026-04-04
+96,Under Engineering Review,FOEU,2026-04-04
+96,Package Ready,FOEU,2026-04-04
+97,DN not issuing,FOEU,2026-04-04
+97,FOEU not issuing package,FOEU,2026-04-04
+97,Under Engineering Review,FOEU,2026-04-04
+98,DN not issuing,FOEU,2026-03-20
+98,Under Engineering Review,FOEU,2026-04-04
+98,Package Ready,FOEU,2026-04-04
+99,DN not issuing,FOEU,2025-11-10
+99,FOEU not issuing package,FOEU,2025-11-28
+99,Under Engineering Review,FOEU,2025-12-14
+99,Package Ready,FOEU,2026-01-03
+99,Waiting CFC Execution,Maintenance (CFC),2026-01-21
+99,Execution started,Maintenance (CFC),2026-01-25
+99,Under Inspection,Inspection,2026-01-30
+100,DN not issuing,FOEU,2026-01-07
+100,FOEU not issuing package,FOEU,2026-01-10
+100,Under Engineering Review,FOEU,2026-01-25
+100,Package Ready,FOEU,2026-02-08
+101,DN not issuing,FOEU,2025-11-19
+101,Under Engineering Review,FOEU,2025-11-22
+101,Package Ready,FOEU,2025-12-05
+101,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-15
+101,Execution started,Maintenance Planner (CRD),2025-12-18
+101,Under Inspection,Inspection,2025-12-29
+101,Completed,Inspection,2026-01-02
+102,DN not issuing,FOEU,2025-11-28
+102,Under Engineering Review,FOEU,2025-12-04
+102,Package Ready,FOEU,2025-12-14
+102,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-24
+102,Execution started,Maintenance Planner (CRD),2026-01-04
+103,DN not issuing,FOEU,2026-02-15
+103,FOEU not issuing package,FOEU,2026-02-23
+103,Under Engineering Review,FOEU,2026-03-05
+103,Package Ready,FOEU,2026-03-18
+103,Waiting CFC Execution,Maintenance (CFC),2026-04-01
+103,Execution started,Maintenance (CFC),2026-04-04
+103,Under Inspection,Inspection,2026-04-04
+104,DN not issuing,FOEU,2025-11-19
+104,FOEU not issuing package,FOEU,2025-12-07
+104,Under Engineering Review,FOEU,2025-12-11
+104,Package Ready,FOEU,2025-12-16
+105,DN not issuing,FOEU,2026-01-14
+105,FOEU not issuing package,FOEU,2026-01-21
+105,Under Engineering Review,FOEU,2026-01-27
+106,DN not issuing,FOEU,2026-04-01
+106,Under Engineering Review,FOEU,2026-04-04
+106,Package Ready,FOEU,2026-04-04
+106,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+106,Execution started,Maintenance Planner (CRD),2026-04-04
+107,DN not issuing,FOEU,2025-11-09
+107,Under Engineering Review,FOEU,2025-11-23
+107,Package Ready,FOEU,2025-12-03
+107,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-11
+107,Execution started,Maintenance Planner (CRD),2025-12-26
+108,DN not issuing,FOEU,2025-10-20
+108,FOEU not issuing package,FOEU,2025-10-30
+108,Under Engineering Review,FOEU,2025-11-05
+108,Package Ready,FOEU,2025-11-23
+108,Waiting CFC Execution,Maintenance (CFC),2025-11-30
+108,Execution started,Maintenance (CFC),2025-12-13
+108,Under Inspection,Inspection,2025-12-18
+109,DN not issuing,FOEU,2025-11-06
+109,FOEU not issuing package,FOEU,2025-11-23
+110,DN not issuing,FOEU,2026-02-10
+110,FOEU not issuing package,FOEU,2026-02-21
+110,Under Engineering Review,FOEU,2026-02-27
+110,Package Ready,FOEU,2026-03-02
+111,DN not issuing,FOEU,2025-11-26
+111,Under Engineering Review,FOEU,2025-12-04
+111,Package Ready,FOEU,2025-12-21
+111,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-26
+111,Execution started,Maintenance Planner (CRD),2025-12-30
+111,Under Inspection,Inspection,2026-01-11
+112,DN not issuing,FOEU,2026-02-27
+112,Under Engineering Review,FOEU,2026-03-12
+112,Package Ready,FOEU,2026-03-30
+112,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-02
+112,Execution started,Maintenance Planner (CRD),2026-04-04
+112,Under Inspection,Inspection,2026-04-04
+113,DN not issuing,FOEU,2025-10-20
+113,Under Engineering Review,FOEU,2025-10-30
+113,Package Ready,FOEU,2025-11-05
+113,Waiting CRD Execution,Maintenance Planner (CRD),2025-11-09
+113,Execution started,Maintenance Planner (CRD),2025-11-24
+113,Under Inspection,Inspection,2025-12-14
+113,Completed,Inspection,2026-01-01
+114,DN not issuing,FOEU,2026-02-24
+115,DN not issuing,FOEU,2026-03-17
+115,Under Engineering Review,FOEU,2026-03-22
+115,Package Ready,FOEU,2026-04-04
+115,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+115,Execution started,Maintenance Planner (CRD),2026-04-04
+116,DN not issuing,FOEU,2025-10-28
+116,FOEU not issuing package,FOEU,2025-11-13
+117,DN not issuing,FOEU,2025-11-30
+117,FOEU not issuing package,FOEU,2025-12-20
+117,Under Engineering Review,FOEU,2026-01-07
+118,DN not issuing,FOEU,2026-04-03
+118,Under Engineering Review,FOEU,2026-04-04
+118,Package Ready,FOEU,2026-04-04
+118,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+119,DN not issuing,FOEU,2026-03-02
+119,FOEU not issuing package,FOEU,2026-03-11
+119,Under Engineering Review,FOEU,2026-03-18
+119,Package Ready,FOEU,2026-03-29
+120,DN not issuing,FOEU,2026-03-26
+120,FOEU not issuing package,FOEU,2026-04-04
+120,Under Engineering Review,FOEU,2026-04-04
+120,Package Ready,FOEU,2026-04-04
+120,Waiting CFC Execution,Maintenance (CFC),2026-04-04
+120,Execution started,Maintenance (CFC),2026-04-04
+121,DN not issuing,FOEU,2025-12-25
+121,FOEU not issuing package,FOEU,2025-12-31
+121,Under Engineering Review,FOEU,2026-01-06
+121,Package Ready,FOEU,2026-01-18
+122,DN not issuing,FOEU,2026-01-07
+122,Under Engineering Review,FOEU,2026-01-11
+122,Package Ready,FOEU,2026-01-19
+122,Waiting CRD Execution,Maintenance Planner (CRD),2026-01-30
+122,Execution started,Maintenance Planner (CRD),2026-02-14
+123,DN not issuing,FOEU,2025-10-21
+123,Under Engineering Review,FOEU,2025-11-04
+123,Package Ready,FOEU,2025-11-07
+123,Waiting CRD Execution,Maintenance Planner (CRD),2025-11-20
+124,DN not issuing,FOEU,2026-01-21
+124,Under Engineering Review,FOEU,2026-01-31
+124,Package Ready,FOEU,2026-02-07
+125,DN not issuing,FOEU,2025-12-28
+125,Under Engineering Review,FOEU,2026-01-02
+125,Package Ready,FOEU,2026-01-11
+125,Waiting CRD Execution,Maintenance Planner (CRD),2026-01-28
+125,Execution started,Maintenance Planner (CRD),2026-02-06
+125,Under Inspection,Inspection,2026-02-22
+125,Completed,Inspection,2026-03-12
+126,DN not issuing,FOEU,2026-04-04
+126,Under Engineering Review,FOEU,2026-04-04
+126,Package Ready,FOEU,2026-04-04
+126,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+126,Execution started,Maintenance Planner (CRD),2026-04-04
+126,Under Inspection,Inspection,2026-04-04
+126,Completed,Inspection,2026-04-04
+127,DN not issuing,FOEU,2026-04-04
+127,FOEU not issuing package,FOEU,2026-04-04
+127,Under Engineering Review,FOEU,2026-04-04
+127,Package Ready,FOEU,2026-04-04
+128,DN not issuing,FOEU,2025-11-11
+129,DN not issuing,FOEU,2026-03-04
+129,Under Engineering Review,FOEU,2026-03-18
+129,Package Ready,FOEU,2026-03-26
+129,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+129,Execution started,Maintenance Planner (CRD),2026-04-04
+129,Under Inspection,Inspection,2026-04-04
+129,Completed,Inspection,2026-04-04
+130,DN not issuing,FOEU,2025-11-18
+130,FOEU not issuing package,FOEU,2025-11-29
+130,Under Engineering Review,FOEU,2025-12-15
+130,Package Ready,FOEU,2026-01-03
+131,DN not issuing,FOEU,2025-12-07
+131,FOEU not issuing package,FOEU,2025-12-17
+131,Under Engineering Review,FOEU,2025-12-28
+131,Package Ready,FOEU,2026-01-09
+132,DN not issuing,FOEU,2025-12-26
+132,Under Engineering Review,FOEU,2026-01-12
+132,Package Ready,FOEU,2026-01-24
+132,Waiting CRD Execution,Maintenance Planner (CRD),2026-02-12
+132,Execution started,Maintenance Planner (CRD),2026-02-27
+132,Under Inspection,Inspection,2026-03-05
+133,DN not issuing,FOEU,2025-11-24
+133,Under Engineering Review,FOEU,2025-11-30
+133,Package Ready,FOEU,2025-12-18
+133,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-23
+133,Execution started,Maintenance Planner (CRD),2026-01-05
+133,Under Inspection,Inspection,2026-01-16
+134,DN not issuing,FOEU,2026-02-12
+134,Under Engineering Review,FOEU,2026-02-22
+134,Package Ready,FOEU,2026-02-26
+135,DN not issuing,FOEU,2025-10-20
+135,Under Engineering Review,FOEU,2025-11-07
+135,Package Ready,FOEU,2025-11-19
+135,Waiting CRD Execution,Maintenance Planner (CRD),2025-11-30
+135,Execution started,Maintenance Planner (CRD),2025-12-16
+136,DN not issuing,FOEU,2026-01-25
+136,FOEU not issuing package,FOEU,2026-02-08
+136,Under Engineering Review,FOEU,2026-02-27
+136,Package Ready,FOEU,2026-03-11
+136,Waiting CFC Execution,Maintenance (CFC),2026-03-19
+136,Execution started,Maintenance (CFC),2026-04-04
+136,Under Inspection,Inspection,2026-04-04
+136,Completed,Inspection,2026-04-04
+137,DN not issuing,FOEU,2025-10-26
+137,FOEU not issuing package,FOEU,2025-11-05
+137,Under Engineering Review,FOEU,2025-11-17
+137,Package Ready,FOEU,2025-12-03
+137,Waiting CFC Execution,Maintenance (CFC),2025-12-16
+137,Execution started,Maintenance (CFC),2025-12-30
+138,DN not issuing,FOEU,2026-03-31
+138,Under Engineering Review,FOEU,2026-04-04
+138,Package Ready,FOEU,2026-04-04
+138,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+138,Execution started,Maintenance Planner (CRD),2026-04-04
+138,Under Inspection,Inspection,2026-04-04
+138,Completed,Inspection,2026-04-04
+139,DN not issuing,FOEU,2026-03-14
+139,FOEU not issuing package,FOEU,2026-03-21
+139,Under Engineering Review,FOEU,2026-04-03
+140,DN not issuing,FOEU,2026-03-23
+140,FOEU not issuing package,FOEU,2026-04-04
+140,Under Engineering Review,FOEU,2026-04-04
+140,Package Ready,FOEU,2026-04-04
+140,Waiting CFC Execution,Maintenance (CFC),2026-04-04
+140,Execution started,Maintenance (CFC),2026-04-04
+140,Under Inspection,Inspection,2026-04-04
+140,Completed,Inspection,2026-04-04
+141,DN not issuing,FOEU,2025-12-16
+141,FOEU not issuing package,FOEU,2025-12-31
+142,DN not issuing,FOEU,2026-01-15
+142,FOEU not issuing package,FOEU,2026-01-25
+142,Under Engineering Review,FOEU,2026-02-04
+142,Package Ready,FOEU,2026-02-18
+142,Waiting CFC Execution,Maintenance (CFC),2026-03-02
+142,Execution started,Maintenance (CFC),2026-03-09
+142,Under Inspection,Inspection,2026-03-15
+142,Completed,Inspection,2026-03-30
+142,Closed,Field Operations,2026-04-04
+143,DN not issuing,FOEU,2026-02-02
+143,Under Engineering Review,FOEU,2026-02-18
+143,Package Ready,FOEU,2026-02-25
+143,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-10
+143,Execution started,Maintenance Planner (CRD),2026-03-28
+143,Under Inspection,Inspection,2026-04-04
+144,DN not issuing,FOEU,2025-12-29
+144,FOEU not issuing package,FOEU,2026-01-07
+144,Under Engineering Review,FOEU,2026-01-10
+145,DN not issuing,FOEU,2026-01-02
+145,FOEU not issuing package,FOEU,2026-01-08
+145,Under Engineering Review,FOEU,2026-01-11
+145,Package Ready,FOEU,2026-01-15
+145,Waiting CFC Execution,Maintenance (CFC),2026-01-21
+146,DN not issuing,FOEU,2025-10-10
+146,Under Engineering Review,FOEU,2025-10-22
+147,DN not issuing,FOEU,2025-12-24
+147,FOEU not issuing package,FOEU,2026-01-05
+148,DN not issuing,FOEU,2026-02-08
+148,FOEU not issuing package,FOEU,2026-02-16
+148,Under Engineering Review,FOEU,2026-02-20
+148,Package Ready,FOEU,2026-03-12
+149,DN not issuing,FOEU,2026-02-09
+149,Under Engineering Review,FOEU,2026-02-27
+149,Package Ready,FOEU,2026-03-06
+150,DN not issuing,FOEU,2026-03-22
+150,FOEU not issuing package,FOEU,2026-04-02
+150,Under Engineering Review,FOEU,2026-04-04
+150,Package Ready,FOEU,2026-04-04
+150,Waiting CFC Execution,Maintenance (CFC),2026-04-04
+151,DN not issuing,FOEU,2026-01-26
+151,FOEU not issuing package,FOEU,2026-02-01
+151,Under Engineering Review,FOEU,2026-02-05
+151,Package Ready,FOEU,2026-02-08
+151,Waiting CFC Execution,Maintenance (CFC),2026-02-15
+152,DN not issuing,FOEU,2026-01-14
+152,FOEU not issuing package,FOEU,2026-01-29
+152,Under Engineering Review,FOEU,2026-02-15
+152,Package Ready,FOEU,2026-02-26
+152,Waiting CFC Execution,Maintenance (CFC),2026-03-13
+152,Execution started,Maintenance (CFC),2026-03-31
+152,Under Inspection,Inspection,2026-04-04
+152,Completed,Inspection,2026-04-04
+152,Closed,Field Operations,2026-04-04
+153,DN not issuing,FOEU,2026-03-26
+153,FOEU not issuing package,FOEU,2026-04-03
+153,Under Engineering Review,FOEU,2026-04-04
+153,Package Ready,FOEU,2026-04-04
+153,Waiting CFC Execution,Maintenance (CFC),2026-04-04
+153,Execution started,Maintenance (CFC),2026-04-04
+154,DN not issuing,FOEU,2026-03-27
+154,Under Engineering Review,FOEU,2026-04-04
+154,Package Ready,FOEU,2026-04-04
+155,DN not issuing,FOEU,2025-12-03
+155,Under Engineering Review,FOEU,2025-12-21
+155,Package Ready,FOEU,2026-01-04
+155,Waiting CRD Execution,Maintenance Planner (CRD),2026-01-19
+155,Execution started,Maintenance Planner (CRD),2026-01-26
+155,Under Inspection,Inspection,2026-02-15
+155,Completed,Inspection,2026-02-19
+156,DN not issuing,FOEU,2025-12-12
+156,Under Engineering Review,FOEU,2025-12-22
+156,Package Ready,FOEU,2026-01-04
+156,Waiting CRD Execution,Maintenance Planner (CRD),2026-01-15
+157,DN not issuing,FOEU,2026-03-31
+157,Under Engineering Review,FOEU,2026-04-03
+157,Package Ready,FOEU,2026-04-04
+157,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+157,Execution started,Maintenance Planner (CRD),2026-04-04
+157,Under Inspection,Inspection,2026-04-04
+158,DN not issuing,FOEU,2026-01-24
+158,Under Engineering Review,FOEU,2026-02-06
+158,Package Ready,FOEU,2026-02-26
+159,DN not issuing,FOEU,2025-10-24
+159,Under Engineering Review,FOEU,2025-11-03
+159,Package Ready,FOEU,2025-11-06
+159,Waiting CRD Execution,Maintenance Planner (CRD),2025-11-19
+159,Execution started,Maintenance Planner (CRD),2025-12-03
+160,DN not issuing,FOEU,2025-11-19
+160,Under Engineering Review,FOEU,2025-11-27
+160,Package Ready,FOEU,2025-12-15
+160,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-22
+160,Execution started,Maintenance Planner (CRD),2026-01-07
+160,Under Inspection,Inspection,2026-01-13
+160,Completed,Inspection,2026-01-24
+161,DN not issuing,FOEU,2026-02-14
+161,Under Engineering Review,FOEU,2026-03-02
+161,Package Ready,FOEU,2026-03-06
+161,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-12
+162,DN not issuing,FOEU,2025-12-11
+162,Under Engineering Review,FOEU,2025-12-30
+162,Package Ready,FOEU,2026-01-03
+162,Waiting CRD Execution,Maintenance Planner (CRD),2026-01-23
+162,Execution started,Maintenance Planner (CRD),2026-02-08
+162,Under Inspection,Inspection,2026-02-26
+162,Completed,Inspection,2026-03-17
+162,Closed,Field Operations,2026-03-25
+163,DN not issuing,FOEU,2026-01-10
+163,FOEU not issuing package,FOEU,2026-01-26
+163,Under Engineering Review,FOEU,2026-02-05
+163,Package Ready,FOEU,2026-02-16
+163,Waiting CFC Execution,Maintenance (CFC),2026-03-03
+163,Execution started,Maintenance (CFC),2026-03-16
+163,Under Inspection,Inspection,2026-03-28
+163,Completed,Inspection,2026-04-04
+164,DN not issuing,FOEU,2026-01-08
+164,FOEU not issuing package,FOEU,2026-01-20
+164,Under Engineering Review,FOEU,2026-02-09
+164,Package Ready,FOEU,2026-02-22
+164,Waiting CFC Execution,Maintenance (CFC),2026-03-14
+164,Execution started,Maintenance (CFC),2026-03-23
+164,Under Inspection,Inspection,2026-04-01
+165,DN not issuing,FOEU,2025-10-27
+165,Under Engineering Review,FOEU,2025-11-02
+165,Package Ready,FOEU,2025-11-16
+165,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-06
+166,DN not issuing,FOEU,2025-10-30
+166,Under Engineering Review,FOEU,2025-11-02
+166,Package Ready,FOEU,2025-11-21
+166,Waiting CRD Execution,Maintenance Planner (CRD),2025-11-27
+166,Execution started,Maintenance Planner (CRD),2025-11-30
+166,Under Inspection,Inspection,2025-12-15
+167,DN not issuing,FOEU,2026-02-23
+167,FOEU not issuing package,FOEU,2026-03-02
+167,Under Engineering Review,FOEU,2026-03-06
+167,Package Ready,FOEU,2026-03-18
+167,Waiting CFC Execution,Maintenance (CFC),2026-03-27
+168,DN not issuing,FOEU,2026-01-23
+168,FOEU not issuing package,FOEU,2026-02-02
+168,Under Engineering Review,FOEU,2026-02-22
+168,Package Ready,FOEU,2026-03-09
+168,Waiting CFC Execution,Maintenance (CFC),2026-03-19
+168,Execution started,Maintenance (CFC),2026-04-04
+168,Under Inspection,Inspection,2026-04-04
+168,Completed,Inspection,2026-04-04
+168,Closed,Field Operations,2026-04-04
+169,DN not issuing,FOEU,2025-11-23
+169,Under Engineering Review,FOEU,2025-12-10
+169,Package Ready,FOEU,2025-12-20
+170,DN not issuing,FOEU,2025-11-14
+170,Under Engineering Review,FOEU,2025-11-26
+170,Package Ready,FOEU,2025-12-13
+170,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-21
+170,Execution started,Maintenance Planner (CRD),2025-12-26
+170,Under Inspection,Inspection,2026-01-03
+170,Completed,Inspection,2026-01-11
+171,DN not issuing,FOEU,2026-01-09
+171,FOEU not issuing package,FOEU,2026-01-16
+171,Under Engineering Review,FOEU,2026-01-24
+172,DN not issuing,FOEU,2026-04-04
+172,FOEU not issuing package,FOEU,2026-04-04
+172,Under Engineering Review,FOEU,2026-04-04
+173,DN not issuing,FOEU,2026-03-25
+173,Under Engineering Review,FOEU,2026-04-04
+173,Package Ready,FOEU,2026-04-04
+173,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+173,Execution started,Maintenance Planner (CRD),2026-04-04
+173,Under Inspection,Inspection,2026-04-04
+173,Completed,Inspection,2026-04-04
+174,DN not issuing,FOEU,2025-10-26
+174,FOEU not issuing package,FOEU,2025-11-14
+174,Under Engineering Review,FOEU,2025-12-02
+174,Package Ready,FOEU,2025-12-22
+174,Waiting CFC Execution,Maintenance (CFC),2025-12-25
+174,Execution started,Maintenance (CFC),2025-12-31
+175,DN not issuing,FOEU,2026-02-12
+175,Under Engineering Review,FOEU,2026-02-16
+175,Package Ready,FOEU,2026-03-01
+175,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-16
+175,Execution started,Maintenance Planner (CRD),2026-03-22
+175,Under Inspection,Inspection,2026-04-04
+176,DN not issuing,FOEU,2025-12-10
+176,Under Engineering Review,FOEU,2025-12-23
+176,Package Ready,FOEU,2026-01-11
+177,DN not issuing,FOEU,2025-11-04
+177,FOEU not issuing package,FOEU,2025-11-20
+177,Under Engineering Review,FOEU,2025-11-26
+178,DN not issuing,FOEU,2025-10-28
+178,Under Engineering Review,FOEU,2025-10-31
+178,Package Ready,FOEU,2025-11-17
+178,Waiting CRD Execution,Maintenance Planner (CRD),2025-11-30
+178,Execution started,Maintenance Planner (CRD),2025-12-04
+178,Under Inspection,Inspection,2025-12-09
+178,Completed,Inspection,2025-12-14
+179,DN not issuing,FOEU,2025-11-24
+179,FOEU not issuing package,FOEU,2025-12-09
+179,Under Engineering Review,FOEU,2025-12-26
+179,Package Ready,FOEU,2026-01-10
+179,Waiting CFC Execution,Maintenance (CFC),2026-01-26
+179,Execution started,Maintenance (CFC),2026-02-08
+179,Under Inspection,Inspection,2026-02-11
+179,Completed,Inspection,2026-02-26
+179,Closed,Field Operations,2026-03-04
+180,DN not issuing,FOEU,2025-11-25
+181,DN not issuing,FOEU,2025-11-17
+181,Under Engineering Review,FOEU,2025-12-02
+181,Package Ready,FOEU,2025-12-17
+182,DN not issuing,FOEU,2025-12-19
+182,FOEU not issuing package,FOEU,2026-01-08
+182,Under Engineering Review,FOEU,2026-01-20
+182,Package Ready,FOEU,2026-01-27
+183,DN not issuing,FOEU,2026-04-04
+183,Under Engineering Review,FOEU,2026-04-04
+183,Package Ready,FOEU,2026-04-04
+183,Waiting CRD Execution,Maintenance Planner (CRD),2026-04-04
+183,Execution started,Maintenance Planner (CRD),2026-04-04
+183,Under Inspection,Inspection,2026-04-04
+183,Completed,Inspection,2026-04-04
+184,DN not issuing,FOEU,2026-02-16
+184,Under Engineering Review,FOEU,2026-02-24
+184,Package Ready,FOEU,2026-03-04
+184,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-14
+184,Execution started,Maintenance Planner (CRD),2026-03-25
+184,Under Inspection,Inspection,2026-04-03
+185,DN not issuing,FOEU,2025-10-26
+185,Under Engineering Review,FOEU,2025-11-06
+185,Package Ready,FOEU,2025-11-12
+185,Waiting CRD Execution,Maintenance Planner (CRD),2025-11-21
+185,Execution started,Maintenance Planner (CRD),2025-12-09
+185,Under Inspection,Inspection,2025-12-22
+185,Completed,Inspection,2026-01-05
+186,DN not issuing,FOEU,2025-12-13
+186,Under Engineering Review,FOEU,2025-12-20
+186,Package Ready,FOEU,2026-01-03
+186,Waiting CRD Execution,Maintenance Planner (CRD),2026-01-16
+186,Execution started,Maintenance Planner (CRD),2026-02-01
+186,Under Inspection,Inspection,2026-02-09
+187,DN not issuing,FOEU,2026-02-06
+187,Under Engineering Review,FOEU,2026-02-24
+187,Package Ready,FOEU,2026-03-13
+187,Waiting CRD Execution,Maintenance Planner (CRD),2026-03-30
+187,Execution started,Maintenance Planner (CRD),2026-04-04
+188,DN not issuing,FOEU,2025-11-19
+188,Under Engineering Review,FOEU,2025-11-30
+188,Package Ready,FOEU,2025-12-07
+189,DN not issuing,FOEU,2026-01-30
+189,FOEU not issuing package,FOEU,2026-02-18
+189,Under Engineering Review,FOEU,2026-02-21
+189,Package Ready,FOEU,2026-03-08
+189,Waiting CFC Execution,Maintenance (CFC),2026-03-17
+189,Execution started,Maintenance (CFC),2026-03-21
+189,Under Inspection,Inspection,2026-04-04
+189,Completed,Inspection,2026-04-04
+190,DN not issuing,FOEU,2025-10-31
+190,Under Engineering Review,FOEU,2025-11-07
+190,Package Ready,FOEU,2025-11-24
+190,Waiting CRD Execution,Maintenance Planner (CRD),2025-12-13
+191,DN not issuing,FOEU,2025-11-06
+191,FOEU not issuing package,FOEU,2025-11-14
+191,Under Engineering Review,FOEU,2025-11-21
+192,DN not issuing,FOEU,2026-01-13
+192,Under Engineering Review,FOEU,2026-01-18
+192,Package Ready,FOEU,2026-01-29
+193,DN not issuing,FOEU,2025-12-30
+193,Under Engineering Review,FOEU,2026-01-12
+193,Package Ready,FOEU,2026-01-18
+193,Waiting CRD Execution,Maintenance Planner (CRD),2026-02-06
+193,Execution started,Maintenance Planner (CRD),2026-02-17
+193,Under Inspection,Inspection,2026-02-28
+194,DN not issuing,FOEU,2026-01-06
+194,Under Engineering Review,FOEU,2026-01-25
+194,Package Ready,FOEU,2026-02-05
+194,Waiting CRD Execution,Maintenance Planner (CRD),2026-02-20
+194,Execution started,Maintenance Planner (CRD),2026-03-02
+195,DN not issuing,FOEU,2025-12-09
+195,Under Engineering Review,FOEU,2025-12-26
+195,Package Ready,FOEU,2026-01-03
+195,Waiting CRD Execution,Maintenance Planner (CRD),2026-01-13
+195,Execution started,Maintenance Planner (CRD),2026-01-18
+195,Under Inspection,Inspection,2026-02-06
+195,Completed,Inspection,2026-02-17
+196,DN not issuing,FOEU,2025-10-23
+196,FOEU not issuing package,FOEU,2025-11-10
+196,Under Engineering Review,FOEU,2025-11-28
+196,Package Ready,FOEU,2025-12-16
+197,DN not issuing,FOEU,2026-02-09
+197,FOEU not issuing package,FOEU,2026-02-16
+197,Under Engineering Review,FOEU,2026-03-07
+198,DN not issuing,FOEU,2025-10-26
+198,FOEU not issuing package,FOEU,2025-11-12
+198,Under Engineering Review,FOEU,2025-11-30
+198,Package Ready,FOEU,2025-12-18
+198,Waiting CFC Execution,Maintenance (CFC),2025-12-26
+198,Execution started,Maintenance (CFC),2026-01-05
+198,Under Inspection,Inspection,2026-01-21
+198,Completed,Inspection,2026-01-28
+198,Closed,Field Operations,2026-02-05
+199,DN not issuing,FOEU,2026-02-08
+199,FOEU not issuing package,FOEU,2026-02-17
+199,Under Engineering Review,FOEU,2026-03-08
+199,Package Ready,FOEU,2026-03-27
+199,Waiting CFC Execution,Maintenance (CFC),2026-04-04
+199,Execution started,Maintenance (CFC),2026-04-04
+200,DN not issuing,FOEU,2025-12-10
+201,DN not issuing,FOEU,2025-10-17
+201,FOEU not issuing package,FOEU,2025-11-05
+201,Under Engineering Review,FOEU,2025-11-21
+201,Package Ready,FOEU,2025-12-01
+201,Waiting CFC Execution,Maintenance (CFC),2025-12-19
+201,Execution started,Maintenance (CFC),2026-01-03
+201,Under Inspection,Inspection,2026-01-17
+202,DN not issuing,FOEU,2025-12-27
+202,FOEU not issuing package,FOEU,2026-01-01
+202,Under Engineering Review,FOEU,2026-01-13
+203,DN not issuing,FOEU,2026-02-01
+203,Under Engineering Review,FOEU,2026-02-20
+204,DN not issuing,FOEU,2025-11-26
+204,Under Engineering Review,FOEU,2025-12-05
+204,Package Ready,FOEU,2025-12-21
