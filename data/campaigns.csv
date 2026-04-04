@@ -1,0 +1,7 @@
+campaign_id,event_type,event_scope,well_count,team_count,status,start_date,end_date,shutdown_groups
+CAM-001,Preventive Maintenance,Sector North,60,3,Active,2026-03-15,2026-05-15,SG-001|SG-002
+CAM-002,Network Optimization,Cluster 3-5,50,3,In Progress,2026-03-20,2026-05-20,SG-003
+CAM-003,Pressure Management,ABQQ Field,40,2,Planning,2026-04-10,2026-06-10,SG-004|SG-005
+CAM-004,Emergency Response,Critical Wells,20,1,Urgent,2026-04-01,2026-04-30,SG-006
+CAM-005,Rig Mobilization,High-Value Wells,15,1,Planning,2026-04-15,2026-06-15,SG-007
+CAM-006,Workover Campaign,Mature Wells,15,1,Active,2026-03-01,2026-05-01,SG-008|SG-009
