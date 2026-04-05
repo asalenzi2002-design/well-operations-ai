@@ -1,5 +1,17 @@
 "use strict";
 
+const {
+  normalizeFieldCode: normalizeDomainFieldCode,
+  normalizeProductionStatus,
+  isProducingStatus: isDomainProducingStatus,
+  isDNResolvedStatus
+} = require("../core/domain");
+const {
+  buildFormationOperationalSummary
+} = require("./formationLineEngine");
+const { enhanceIntelligence } = require("./intelligenceEnhancer");
+const { buildExecutiveCommandLayer } = require("./recommendationEngine");
+
 /* =========================================================
    Helpers
 ========================================================= */
@@ -72,23 +84,19 @@ function extractFieldCodeFromName(wellName) {
 }
 
 function normalizeFieldCode(well) {
-  const direct = cleanText(well?.field_code).toUpperCase();
-  if (direct === "ANDR" || direct === "ABQQ") return direct;
-
-  const inferred = extractFieldCodeFromName(well?.well_name || well?.name || "");
-  if (inferred) return inferred;
-
-  const fieldName = lower(well?.field);
-  if (fieldName === "ain dar") return "ANDR";
-  if (fieldName === "abqaiq") return "ABQQ";
-
-  return "UNKNOWN";
+  return normalizeDomainFieldCode(
+    well?.field_code,
+    well?.well_name || well?.name || "",
+    well?.field
+  );
 }
 
 function normalizeWell(well) {
   const wellName = cleanText(pickFirst(well?.well_name, well?.name));
   const productionStatus = cleanText(
-    pickFirst(well?.production_status, well?.status, "Unknown")
+    normalizeProductionStatus(
+      pickFirst(well?.production_status, well?.status, "Unknown")
+    )
   );
   const oilRate = toNumber(
     pickFirst(well?.oil_rate_bopd, well?.oil_rate, well?.oilrate, well?.rate, 0),
@@ -196,15 +204,15 @@ function normalizeDN(dn) {
 }
 
 function isProducingWell(well) {
-  return PRODUCING_STATUSES.has(lower(well?.production_status));
+  return isDomainProducingStatus(well?.production_status);
 }
 
 function isNonProducingDropWell(well) {
-  return NON_PRODUCING_DROP_STATUSES.has(lower(well?.production_status));
+  return NON_PRODUCING_DROP_STATUSES.has(lower(normalizeProductionStatus(well?.production_status)));
 }
 
 function isActiveDN(dn) {
-  return lower(dn?.workflow_status) !== "closed";
+  return !isDNResolvedStatus(dn?.workflow_status || dn?.dn_status || dn?.status);
 }
 
 function isHighPriorityDN(dn) {
@@ -313,6 +321,145 @@ function groupDNLoad(items, keyFn, now = new Date()) {
   });
 }
 
+function buildFieldBuckets() {
+  return new Map([
+    ["ANDR", {
+      field_code: "ANDR",
+      wells: [],
+      active_dns: [],
+      blocked_dns: [],
+      aged_dns: [],
+      high_priority_dns: [],
+      high_risk_wells: [],
+      recovery_wells: [],
+      producing_rate_bopd: 0,
+      deferred_rate_bopd: 0
+    }],
+    ["ABQQ", {
+      field_code: "ABQQ",
+      wells: [],
+      active_dns: [],
+      blocked_dns: [],
+      aged_dns: [],
+      high_priority_dns: [],
+      high_risk_wells: [],
+      recovery_wells: [],
+      producing_rate_bopd: 0,
+      deferred_rate_bopd: 0
+    }]
+  ]);
+}
+
+function dnActionScore(dn, well, now = new Date()) {
+  const age = daysSince(pickFirst(dn?.update_date, dn?.created_date), now) || 0;
+  const progress = toNumber(dn?.progress_percent, 0);
+  const rate = toNumber(well?.oil_rate_bopd, 0);
+  const blocked = isBlockedDN(dn) ? 25 : 0;
+  const priority = isHighPriorityDN(dn) ? 35 : lower(dn?.priority) === "medium" ? 15 : 5;
+  return rate * 0.05 + age + blocked + priority + ((100 - progress) / 5);
+}
+
+function recoveryScore(well, dns = [], now = new Date()) {
+  const rate = toNumber(well?.oil_rate_bopd, 0);
+  const blocked = dns.filter(isBlockedDN).length;
+  const highPriority = dns.filter(isHighPriorityDN).length;
+  const maxAge = Math.max(
+    0,
+    ...dns.map((dn) => daysSince(pickFirst(dn?.update_date, dn?.created_date), now) || 0)
+  );
+  return rate + blocked * 120 + highPriority * 90 + maxAge * 2;
+}
+
+function buildFieldOperationalIntelligence({ wells = [], dns = [], riskData = null }) {
+  const now = new Date();
+  const normalizedWells = safeArray(wells).map(normalizeWell);
+  const normalizedDNs = safeArray(dns).map(normalizeDN);
+  const dnsByWell = buildDNsByWell(normalizedDNs);
+  const fieldBuckets = buildFieldBuckets();
+
+  normalizedWells.forEach((well) => {
+    const fieldCode = normalizeFieldCode(well);
+    const bucket = fieldBuckets.get(fieldCode);
+    if (!bucket) return;
+
+    bucket.wells.push(well);
+
+    if (isProducingWell(well)) {
+      bucket.producing_rate_bopd += toNumber(well.oil_rate_bopd, 0);
+    } else if (isNonProducingDropWell(well) && toNumber(well.oil_rate_bopd, 0) > 0) {
+      const relatedActiveDNs = safeArray(dnsByWell.get(well.well_id)).filter(isActiveDN);
+      if (relatedActiveDNs.length > 0) {
+        bucket.deferred_rate_bopd += toNumber(well.oil_rate_bopd, 0);
+        bucket.recovery_wells.push({
+          ...formatWellLite(well),
+          active_dn_count: relatedActiveDNs.length,
+          blocked_dn_count: relatedActiveDNs.filter(isBlockedDN).length,
+          high_priority_dn_count: relatedActiveDNs.filter(isHighPriorityDN).length,
+          recovery_score: recoveryScore(well, relatedActiveDNs, now)
+        });
+      }
+    }
+  });
+
+  normalizedDNs.filter(isActiveDN).forEach((dn) => {
+    const well = normalizedWells.find((item) => item.well_id === dn.well_id);
+    const fieldCode = normalizeFieldCode(well || { field_code: "UNKNOWN" });
+    const bucket = fieldBuckets.get(fieldCode);
+    if (!bucket) return;
+
+    bucket.active_dns.push(dn);
+    if (isBlockedDN(dn)) bucket.blocked_dns.push(dn);
+    if (isAgedDN(dn, now)) bucket.aged_dns.push(dn);
+    if (isHighPriorityDN(dn)) bucket.high_priority_dns.push(dn);
+  });
+
+  safeArray(riskData?.top_risk_wells).forEach((well) => {
+    const fieldCode = normalizeFieldCode(well);
+    const bucket = fieldBuckets.get(fieldCode);
+    if (!bucket) return;
+    bucket.high_risk_wells.push(well);
+  });
+
+  const result = {};
+  for (const [fieldCode, bucket] of fieldBuckets.entries()) {
+    const rankedDNs = topItems(bucket.active_dns, 3, (dn) => {
+      const well = normalizedWells.find((item) => item.well_id === dn.well_id);
+      return dnActionScore(dn, well, now);
+    }).map((dn) => {
+      const well = normalizedWells.find((item) => item.well_id === dn.well_id);
+      return {
+        ...formatDNLite(dn, now),
+        well_name: well?.well_name || "",
+        field_code: fieldCode,
+        estimated_gain_bopd: toNumber(well?.oil_rate_bopd, 0)
+      };
+    });
+
+    const rankedRecoveryWells = [...bucket.recovery_wells]
+      .sort((a, b) => b.recovery_score - a.recovery_score)
+      .slice(0, 3)
+      .map((well) => ({
+        ...well,
+        estimated_gain_bopd: toNumber(well.oil_rate_bopd, 0)
+      }));
+
+    result[fieldCode] = {
+      field_code: fieldCode,
+      producing_rate_bopd: round(bucket.producing_rate_bopd, 1),
+      deferred_rate_bopd: round(bucket.deferred_rate_bopd, 1),
+      active_dn_count: bucket.active_dns.length,
+      blocked_dn_count: bucket.blocked_dns.length,
+      aged_dn_count: bucket.aged_dns.length,
+      high_priority_dn_count: bucket.high_priority_dns.length,
+      top_dns_to_act: rankedDNs,
+      top_wells_to_recover: rankedRecoveryWells,
+      high_risk_wells: bucket.high_risk_wells.slice(0, 3)
+    };
+  }
+
+  return result;
+}
+
 function sumOilRate(wells) {
   return safeArray(wells).reduce((sum, well) => sum + toNumber(well.oil_rate_bopd, 0), 0);
 }
@@ -410,6 +557,7 @@ function formatDNLite(dn, now = new Date()) {
 function buildProductionIntelligence({ wells = [], dns = [] }) {
   const normalizedWells = safeArray(wells).map(normalizeWell);
   const dnsByWell = buildDNsByWell(dns);
+  const fieldIntel = buildFieldOperationalIntelligence({ wells: normalizedWells, dns });
 
   const producingWells = normalizedWells.filter(isProducingWell);
   const nonProducingExposureWells = normalizedWells.filter(
@@ -465,6 +613,14 @@ function buildProductionIntelligence({ wells = [], dns = [] }) {
     insight += ` Field contribution is ${imbalance} (${andrPercent}% ANDR vs ${abqqPercent}% ABQQ).`;
   }
 
+  const dominantDeferredField =
+    toNumber(fieldIntel?.ANDR?.deferred_rate_bopd, 0) >= toNumber(fieldIntel?.ABQQ?.deferred_rate_bopd, 0)
+      ? fieldIntel?.ANDR
+      : fieldIntel?.ABQQ;
+  if (dominantDeferredField && dominantDeferredField.deferred_rate_bopd > 0) {
+    insight += ` Deferred opportunity is heaviest in ${dominantDeferredField.field_code} at ${dominantDeferredField.deferred_rate_bopd} BOPD.`;
+  }
+
   return {
     current_rate_bopd: currentRate,
     estimated_previous_rate_bopd: previousEstimate,
@@ -513,6 +669,17 @@ function buildDNIntelligence({ dns = [] }) {
     insight = `${highPriorityDNs.length} high-priority DNs remain open and should be cleared first.`;
   }
 
+  const byField = groupDNLoad(activeDNs, (dn) => {
+    const fieldPrefix = cleanText(dn?.well_id).toUpperCase();
+    if (fieldPrefix.startsWith("ANDR-")) return "ANDR";
+    if (fieldPrefix.startsWith("ABQQ-")) return "ABQQ";
+    return "UNKNOWN";
+  }, now);
+  const topField = byField[0] || null;
+  if (topField && topField.name !== "UNKNOWN") {
+    insight += ` ${topField.name} carries the highest active DN load (${topField.total} items).`;
+  }
+
   return {
     active_count: activeDNs.length,
     high_priority_count: highPriorityDNs.length,
@@ -528,6 +695,7 @@ function buildDNIntelligence({ dns = [] }) {
       const age = daysSince(pickFirst(dn.update_date, dn.created_date), now) || 0;
       return age + (isHighPriorityDN(dn) ? 20 : 0);
     }).map((dn) => formatDNLite(dn, now)),
+    by_field: byField,
     by_owner: ownerLoad,
     by_phase: phaseLoad,
     bottleneck_owner: bottleneckOwner,
@@ -628,6 +796,7 @@ function buildDropIntelligence({ wells = [], dns = [], riskData = null }) {
   const normalizedDNs = safeArray(dns).map(normalizeDN);
   const dnsByWell = buildDNsByWell(normalizedDNs);
   const dnImpact = calculateDNProductionImpact({ wells, dns: normalizedDNs });
+  const fieldIntel = buildFieldOperationalIntelligence({ wells, dns: normalizedDNs, riskData });
 
   const linkedWellCount = dnImpact.impacted_wells.filter((well) => well.active_dn_count > 0).length;
   const blockedLinkedWellCount = dnImpact.impacted_wells.filter((well) => well.blocked_dn_count > 0).length;
@@ -638,6 +807,10 @@ function buildDropIntelligence({ wells = [], dns = [], riskData = null }) {
   );
 
   const likelyCause = inferLikelyDropCause(dnImpact.impacted_wells, dnsByWell);
+  const topRecoveryField =
+    toNumber(fieldIntel?.ANDR?.deferred_rate_bopd, 0) >= toNumber(fieldIntel?.ABQQ?.deferred_rate_bopd, 0)
+      ? fieldIntel?.ANDR
+      : fieldIntel?.ABQQ;
 
   return {
     estimated_lost_bopd: dnImpact.estimated_lost_bopd,
@@ -646,7 +819,10 @@ function buildDropIntelligence({ wells = [], dns = [], riskData = null }) {
     blocked_dn_linked_well_count: blockedLinkedWellCount,
     impacted_wells: dnImpact.impacted_wells.slice(0, 5),
     high_risk_impacted_wells: impactedRiskWells.slice(0, 5),
-    likely_cause: likelyCause
+    likely_cause:
+      topRecoveryField && topRecoveryField.deferred_rate_bopd > 0
+        ? `${likelyCause} Recovery upside is currently highest in ${topRecoveryField.field_code}.`
+        : likelyCause
   };
 }
 
@@ -877,6 +1053,7 @@ function buildActionRecommendations({ wells = [], dns = [], overdueKpiImpact = n
 
   const overdueData = overdueKpiImpact || buildOverdueKPIImpact({ wells, dns });
   const bottleneckData = bottlenecks || buildBottleneckIntelligence({ wells, dns, overdueKpiImpact: overdueData });
+  const fieldIntel = buildFieldOperationalIntelligence({ wells, dns });
 
   const topOverdueWell = overdueData.top_overdue_wells.length ? overdueData.top_overdue_wells[0] : null;
   if (topOverdueWell && topOverdueWell.estimated_loss_bopd > 0) {
@@ -914,6 +1091,26 @@ function buildActionRecommendations({ wells = [], dns = [], overdueKpiImpact = n
   if (topField && topField.total_loss_bopd > 0) {
     recommendations.push(
       `Focus recovery in ${topField.field}; it carries ${round(topField.total_loss_bopd, 1)} BOPD of overdue-related loss.`
+    );
+  }
+
+  const rankedFieldDNs = ["ANDR", "ABQQ"]
+    .flatMap((fieldCode) => safeArray(fieldIntel?.[fieldCode]?.top_dns_to_act))
+    .sort((a, b) => toNumber(b.estimated_gain_bopd, 0) - toNumber(a.estimated_gain_bopd, 0));
+  const topDN = rankedFieldDNs[0] || null;
+  if (topDN && topDN.dn_id) {
+    recommendations.push(
+      `Act on DN ${topDN.dn_id} in ${topDN.field_code}; it is tied to ${topDN.well_name} and protects about ${round(topDN.estimated_gain_bopd, 1)} BOPD.`
+    );
+  }
+
+  const rankedRecoveryWells = ["ANDR", "ABQQ"]
+    .flatMap((fieldCode) => safeArray(fieldIntel?.[fieldCode]?.top_wells_to_recover))
+    .sort((a, b) => toNumber(b.estimated_gain_bopd, 0) - toNumber(a.estimated_gain_bopd, 0));
+  const topRecoveryWell = rankedRecoveryWells[0] || null;
+  if (topRecoveryWell && topRecoveryWell.well_name) {
+    recommendations.push(
+      `Recover ${topRecoveryWell.well_name} first; it offers about ${round(topRecoveryWell.estimated_gain_bopd, 1)} BOPD with ${topRecoveryWell.active_dn_count} active DNs attached.`
     );
   }
 
@@ -969,7 +1166,7 @@ function buildFlags({ production, dn, risk, drop }) {
    Executive Summary
 ========================================================= */
 
-function buildExecutiveSummary({ production, dn, risk, drop, flags, overdueKpiImpact, bottlenecks }) {
+function buildExecutiveSummary({ production, dn, risk, drop, flags, overdueKpiImpact, bottlenecks, fieldIntelligence = null, executiveCommand = null, enhancements = null }) {
   const lines = [];
 
   const overdueData = overdueKpiImpact || { total_overdue_dn_count: 0, total_overdue_loss_bopd: 0 };
@@ -1004,6 +1201,17 @@ function buildExecutiveSummary({ production, dn, risk, drop, flags, overdueKpiIm
     lines.push("Main risk is distributed with no single dominant field.");
   }
 
+  const andr = fieldIntelligence?.ANDR || null;
+  const abqq = fieldIntelligence?.ABQQ || null;
+  if (andr && abqq) {
+    const andrSignal = toNumber(andr.deferred_rate_bopd, 0) + toNumber(andr.active_dn_count, 0) * 25;
+    const abqqSignal = toNumber(abqq.deferred_rate_bopd, 0) + toNumber(abqq.active_dn_count, 0) * 25;
+    if (andrSignal > 0 || abqqSignal > 0) {
+      const dominant = andrSignal >= abqqSignal ? "ANDR" : "ABQQ";
+      lines[2] = `${lines[2]} Field-specific pressure is highest in ${dominant}.`;
+    }
+  }
+
   if (overdueData.top_overdue_wells?.[0]?.well_name) {
     const topWell = overdueData.top_overdue_wells[0];
     lines.push(
@@ -1017,6 +1225,16 @@ function buildExecutiveSummary({ production, dn, risk, drop, flags, overdueKpiIm
     lines.push(`Focus on ${flags[0].toLowerCase()}.`);
   } else {
     lines.push("Focus on maintaining flow and preventing backlog growth.");
+  }
+
+  if (executiveCommand?.mode?.mode) {
+    lines[0] = `${lines[0]} Command mode is ${executiveCommand.mode.mode}.`;
+  }
+
+  if (executiveCommand?.top_action?.title) {
+    lines[3] = `Top command action is ${executiveCommand.top_action.title} in ${executiveCommand.top_action.field_code}, where acting now protects or unlocks about ${executiveCommand.top_action.estimated_impact_bopd} BOPD.`;
+  } else if (enhancements?.executive_signals?.biggest_operational_pressure_field) {
+    lines[3] = `Top command focus should remain on ${enhancements.executive_signals.biggest_operational_pressure_field}, where operational pressure is highest in the current data.`;
   }
 
   return lines.slice(0, 4).join(" ");
@@ -1057,6 +1275,8 @@ function enrichRiskWithDN(riskItems = [], dns = []) {
 function buildSystemIntelligence(payload = {}) {
   const wells = safeArray(payload.wells).map(normalizeWell);
   const dns = safeArray(payload.dns).map(normalizeDN);
+  const formationProjects = safeArray(payload.formationProjects);
+  const formationTasks = safeArray(payload.formationTasks);
 
   const riskData = payload.riskData || {};
   const enrichedRiskItems = enrichRiskWithDN(
@@ -1073,24 +1293,64 @@ function buildSystemIntelligence(payload = {}) {
 
   const production = buildProductionIntelligence({ wells, dns });
   const dn = buildDNIntelligence({ dns });
+  const formation = buildFormationOperationalSummary(formationProjects, formationTasks);
   const risk = buildRiskIntelligence({ riskData: mergedRiskData, riskItems: enrichedRiskItems });
   const drop = buildDropIntelligence({ wells, dns, riskData: mergedRiskData });
+  const fieldIntelligence = buildFieldOperationalIntelligence({ wells, dns, riskData: mergedRiskData });
 
   const overdueKpiImpact = buildOverdueKPIImpact({ wells, dns });
   const bottlenecks = buildBottleneckIntelligence({ wells, dns, overdueKpiImpact });
   const recommendations = buildActionRecommendations({ wells, dns, overdueKpiImpact, bottlenecks });
-
-  const flags = buildFlags({ production, dn, risk, drop });
-  const summary = buildExecutiveSummary({ production, dn, risk, drop, flags, overdueKpiImpact, bottlenecks });
-
-  return {
+  const preliminary = {
     production,
     dn,
+    formation,
     risk,
     drop,
     overdue_kpi_impact: overdueKpiImpact,
     bottlenecks,
     recommendations,
+    field_intelligence: fieldIntelligence
+  };
+  const enhancements = enhanceIntelligence({
+    wells,
+    dns,
+    risk: mergedRiskData,
+    intelligence: preliminary
+  });
+  const executiveCommand = buildExecutiveCommandLayer({
+    risk: mergedRiskData,
+    intelligence: preliminary,
+    formationProjects,
+    formationTasks,
+    enhancements
+  });
+  const flags = buildFlags({ production, dn, risk, drop });
+  const summary = buildExecutiveSummary({
+    production,
+    dn,
+    risk,
+    drop,
+    flags,
+    overdueKpiImpact,
+    bottlenecks,
+    fieldIntelligence,
+    executiveCommand,
+    enhancements
+  });
+
+  return {
+    production,
+    dn,
+    formation,
+    risk,
+    drop,
+    overdue_kpi_impact: overdueKpiImpact,
+    bottlenecks,
+    recommendations,
+    field_intelligence: fieldIntelligence,
+    enhancements,
+    executive_command: executiveCommand,
     flags,
     summary
   };

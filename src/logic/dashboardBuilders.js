@@ -15,9 +15,20 @@ const {
   calculateDNRisk,
   buildRiskDashboard
 } = require("./riskEngine");
+const {
+  calculateDNImpact: calculateOperationalDNImpact
+} = require("./dnImpactEngine");
 
 const { generateRecommendations } = require("./recommendationEngine");
 const { enhanceIntelligence } = require("./intelligenceEnhancer");
+const {
+  buildFormationOperationalSummary
+} = require("./formationLineEngine");
+const {
+  normalizeFieldCode,
+  normalizeProductionStatus,
+  isProducingStatus: isDomainProducingStatus
+} = require("../core/domain");
 
 /* ====================================================================
    Helpers
@@ -43,8 +54,11 @@ function getArray(value) {
 }
 
 function isProducingStatus(status) {
-  const normalized = toSafeLower(status);
-  return normalized === "on production" || normalized === "testing";
+  return isDomainProducingStatus(status);
+}
+
+function getNormalizedFieldCode(well) {
+  return normalizeFieldCode(well?.field_code, well?.well_name || well?.name, well?.field);
 }
 
 function buildDNMapByWell(dns) {
@@ -143,32 +157,14 @@ function calculateProductionDrop(history) {
 }
 
 function calculateDNImpact(normalizedWells, latestDNsByWell) {
-  const wellsList = getArray(normalizedWells);
-  const dnByWell = latestDNsByWell instanceof Map ? latestDNsByWell : new Map();
-
-  let lostProduction = 0;
-  let affectedWells = 0;
-
-  for (const well of wellsList) {
-    const wellId = toSafeString(well?.well_id || well?.id);
-    if (!wellId) continue;
-
-    const status = toSafeLower(well?.production_status);
-    const rate = toNumber(well?.oil_rate_bopd, 0);
-    const wellDNs = getArray(dnByWell.get(wellId));
-
-    const hasActiveDN = wellDNs.some((dn) => !dn?.is_closed);
-    const isProducing = isProducingStatus(status);
-
-    if (!isProducing && hasActiveDN) {
-      lostProduction += rate;
-      affectedWells += 1;
-    }
-  }
+  const impact = calculateOperationalDNImpact(
+    getArray(normalizedWells),
+    latestDNsByWell
+  );
 
   return {
-    lost_production: lostProduction,
-    affected_wells: affectedWells
+    lost_production: toNumber(impact?.total_estimated_loss_bopd, 0),
+    affected_wells: toNumber(impact?.impacted_wells_count, 0)
   };
 }
 
@@ -212,19 +208,19 @@ function buildOverviewSection(normalizedWells, latestDNs, productionHistory, mon
   };
 
   safeWells.forEach((w) => {
-    const rawStatus = toSafeLower(w?.production_status);
+    const rawStatus = normalizeProductionStatus(w?.production_status);
 
-    if (rawStatus.includes("locked")) {
+    if (rawStatus === "Locked Potential") {
       statusCounts.locked_potential += 1;
-    } else if (rawStatus === "on production") {
+    } else if (rawStatus === "On Production") {
       statusCounts.on_production += 1;
-    } else if (rawStatus === "testing") {
+    } else if (rawStatus === "Testing") {
       statusCounts.testing += 1;
-    } else if (rawStatus === "standby") {
+    } else if (rawStatus === "Standby") {
       statusCounts.standby += 1;
-    } else if (rawStatus === "mothball" || rawStatus === "moth ball") {
+    } else if (rawStatus === "Mothball") {
       statusCounts.mothball += 1;
-    } else if (rawStatus === "shut-in" || rawStatus === "shut in") {
+    } else if (rawStatus === "Shut-in") {
       statusCounts.shut_in += 1;
     }
   });
@@ -234,7 +230,7 @@ function buildOverviewSection(normalizedWells, latestDNs, productionHistory, mon
 
   safeWells.forEach((w) => {
     const rate = toNumber(w?.oil_rate_bopd, 0);
-    const field = toSafeString(w?.field_code).toUpperCase();
+    const field = getNormalizedFieldCode(w);
     const includeInProduction = isProducingStatus(w?.production_status);
 
     if (!includeInProduction) return;
@@ -432,11 +428,13 @@ function buildIntelligenceSection(intelligence) {
     return {
       production: null,
       dn: null,
+      formation: null,
       risk: null,
       drop: null,
       overdue_kpi_impact: null,
       bottlenecks: null,
       recommendations: null,
+      executive_command: null,
       flags: [],
       summary: ""
     };
@@ -445,14 +443,26 @@ function buildIntelligenceSection(intelligence) {
   return {
     production: intelligence.production ?? null,
     dn: intelligence.dn ?? null,
+    formation: intelligence.formation ?? null,
     risk: intelligence.risk ?? null,
     drop: intelligence.drop ?? null,
     overdue_kpi_impact: intelligence.overdue_kpi_impact ?? null,
     bottlenecks: intelligence.bottlenecks ?? null,
     recommendations: intelligence.recommendations ?? null,
+    executive_command: intelligence.executive_command ?? null,
     flags: getArray(intelligence.flags),
     summary: intelligence.summary ?? ""
   };
+}
+
+function buildFormationSection(formationProjects = [], formationTasks = [], fieldCode = "") {
+  const formation = buildFormationOperationalSummary(formationProjects, formationTasks);
+  if (!fieldCode) {
+    return formation;
+  }
+
+  const target = String(fieldCode).toUpperCase().trim();
+  return formation.by_field?.[target] || null;
 }
 
 /* ====================================================================
@@ -462,18 +472,25 @@ function buildIntelligenceSection(intelligence) {
 function buildExecutiveDashboard({
   wells = [],
   dns = [],
+  formationProjects = [],
+  formationTasks = [],
   productionHistory = [],
   monthlyTarget = 0,
   coreEngine = null
 }) {
-  const normalizedWells = getArray(wells);
-  const latestDNs = getArray(dns);
+  const normalizedWells = coreEngine
+    ? getCoreEngineWellEntries(coreEngine)
+    : getArray(wells);
+  const latestDNs = coreEngine
+    ? getCoreEngineDNEntries(coreEngine)
+    : getArray(dns);
   const target = toNumber(monthlyTarget, 0);
   const dnMap = buildDNMapByWell(latestDNs);
 
   const overview = buildOverviewSection(normalizedWells, latestDNs, productionHistory, target);
   const production = buildProductionSection(normalizedWells, latestDNs, productionHistory);
   const dnSection = buildDNSection(latestDNs, normalizedWells, dnMap);
+  const formation = buildFormationSection(formationProjects, formationTasks);
 
   let riskSection;
   let riskData;
@@ -494,6 +511,8 @@ function buildExecutiveDashboard({
   const baseIntelligence = buildSystemIntelligence({
     wells: normalizedWells,
     dns: latestDNs,
+    formationProjects,
+    formationTasks,
     riskData,
     riskItems: getArray(riskData?.top_risk_wells)
   });
@@ -503,6 +522,8 @@ function buildExecutiveDashboard({
   const recommendations = generateRecommendations({
     wells: normalizedWells,
     dns: latestDNs,
+    formationProjects,
+    formationTasks,
     risk: riskData,
     intelligence: baseIntelligence
   });
@@ -582,8 +603,10 @@ function buildExecutiveDashboard({
     overview,
     production,
     dn: dnSection,
+    formation,
     risk: riskSection,
     intelligence: intelligenceSection,
+    executive_command: intelligenceSection.executive_command,
     kpis,
     insights,
     recommendations,
@@ -594,20 +617,24 @@ function buildExecutiveDashboard({
 
 function buildFieldDashboard(
   fieldCode,
-  { wells = [], dns = [], productionHistory = [], monthlyTarget = 0 }
+  { wells = [], dns = [], formationProjects = [], formationTasks = [], productionHistory = [], monthlyTarget = 0, coreEngine = null }
 ) {
   const target = String(fieldCode ?? "").toUpperCase().trim();
   if (!target) return null;
 
-  const allWells = getArray(wells);
+  const allWells = coreEngine
+    ? getCoreEngineWellEntries(coreEngine)
+    : getArray(wells);
   const fieldWells = allWells.filter(
-    (w) => String(w.field_code || "").toUpperCase() === target
+    (w) => getNormalizedFieldCode(w) === target
   );
 
   if (fieldWells.length === 0) return null;
 
   const wellIds = new Set(fieldWells.map((w) => String(w.well_id)));
-  const allDns = getArray(dns);
+  const allDns = coreEngine
+    ? getCoreEngineDNEntries(coreEngine)
+    : getArray(dns);
   const fieldDns = allDns.filter((dn) => wellIds.has(String(dn.well_id)));
   const dnMap = buildDNMapByWell(fieldDns);
 
@@ -620,6 +647,7 @@ function buildFieldDashboard(
 
   const production = buildProductionSection(fieldWells, fieldDns, productionHistory);
   const dnSection = buildDNSection(fieldDns, fieldWells, dnMap);
+  const formation = buildFormationSection(formationProjects, formationTasks, target);
 
   const riskData = buildRiskDashboard(fieldWells, fieldDns);
   const riskSection = buildRiskSection(riskData);
@@ -627,6 +655,8 @@ function buildFieldDashboard(
   const baseIntel = buildSystemIntelligence({
     wells: fieldWells,
     dns: fieldDns,
+    formationProjects,
+    formationTasks,
     riskData,
     riskItems: getArray(riskData?.top_risk_wells)
   });
@@ -636,6 +666,8 @@ function buildFieldDashboard(
   const recommendations = generateRecommendations({
     wells: fieldWells,
     dns: fieldDns,
+    formationProjects,
+    formationTasks,
     risk: riskData,
     intelligence: baseIntel
   });
@@ -653,8 +685,10 @@ function buildFieldDashboard(
     overview,
     production,
     dn: dnSection,
+    formation,
     risk: riskSection,
     intelligence: intelligenceSection,
+    executive_command: intelligenceSection.executive_command,
     recommendations,
     enhancements
   };
@@ -662,17 +696,20 @@ function buildFieldDashboard(
 
 function buildWellDashboard(
   wellId,
-  { wells = [], dns = [] }
+  { wells = [], dns = [], formationProjects = [], formationTasks = [], coreEngine = null }
 ) {
   const targetId = String(wellId ?? "").trim();
   if (!targetId) return null;
 
-  const allWells = getArray(wells);
+  const allWells = coreEngine
+    ? getCoreEngineWellEntries(coreEngine)
+    : getArray(wells);
   const well = allWells.find((w) => String(w.well_id) === targetId);
   if (!well) return null;
 
-  const allDns = getArray(dns);
-  const wellDns = allDns.filter((dn) => String(dn.well_id) === targetId);
+  const wellDns = coreEngine && typeof coreEngine.getDNsForWell === "function"
+    ? getArray(coreEngine.getDNsForWell(targetId))
+    : getArray(dns).filter((dn) => String(dn.well_id) === targetId);
 
   let wellRisk = { score: 0, level: "LOW", reasons: [] };
 
@@ -738,6 +775,8 @@ function buildWellDashboard(
   const intel = buildSystemIntelligence({
     wells: [well],
     dns: wellDns,
+    formationProjects,
+    formationTasks,
     riskData,
     riskItems: riskData.top_risk_wells
   });
@@ -747,6 +786,8 @@ function buildWellDashboard(
   const recommendations = generateRecommendations({
     wells: [well],
     dns: wellDns,
+    formationProjects,
+    formationTasks,
     risk: riskData,
     intelligence: intel
   });
@@ -770,6 +811,7 @@ function buildWellDashboard(
     dn: wellDns,
     risk: riskSection,
     intelligence: intelligenceSection,
+    executive_command: intelligenceSection.executive_command,
     recommendations,
     enhancements
   };
@@ -779,6 +821,7 @@ module.exports = {
   buildOverviewSection,
   buildProductionSection,
   buildDNSection,
+  buildFormationSection,
   buildRiskSection,
   buildRiskSectionFromEngine,
   buildIntelligenceSection,

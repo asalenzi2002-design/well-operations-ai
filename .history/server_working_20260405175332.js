@@ -5,15 +5,6 @@ const fs = require("fs");
 const path = require("path");
 const CoreEngine = require("./src/core");
 const {
-  normalizeFieldCode,
-  normalizeProductionStatus: normalizeDomainProductionStatus,
-  isProducingStatus,
-  interpretDNWorkflowStatus,
-  interpretDNCurrentStep,
-  isDNResolvedStatus,
-  compareDNLogRows
-} = require("./src/core/domain");
-const {
   calculateWellRisk,
   calculateDNRisk,
   buildRiskDashboard
@@ -21,13 +12,6 @@ const {
 const { buildSystemIntelligence } = require("./src/logic/intelligenceBuilders");
 const dashboardBuilders = require("./src/logic/dashboardBuilders");
 const { generateRecommendations } = require("./src/logic/recommendationEngine");
-const {
-  calculateDNImpact: calculateOperationalDNImpact
-} = require("./src/logic/dnImpactEngine");
-const {
-  buildFormationOperationalSummary
-} = require("./src/logic/formationLineEngine");
-const { buildExecutionPlan } = require("./src/logic/executionEngine");
 
 const app = express();
 app.use(express.json());
@@ -37,16 +21,12 @@ const PORT = process.env.PORT || 3002;
 let dnMaster = [];
 let wells = [];
 let dnLogs = [];
-let formationProjects = [];
-let formationTasks = [];
 let coreEngine = null;
 
 let normalizedWellsCache = null;
 let latestDNMapCache = null;
 let mergedLatestDNsCache = null;
 let latestDNsByWellCache = null;
-let formationSummaryCache = null;
-let globalDashboardContextCache = null;
 
 const productionHistory = [
   { timestamp: "2026-04-02T00:00:00Z", bopd: 980 },
@@ -96,8 +76,6 @@ function invalidateDataCaches() {
   latestDNMapCache = null;
   mergedLatestDNsCache = null;
   latestDNsByWellCache = null;
-  formationSummaryCache = null;
-  globalDashboardContextCache = null;
 }
 
 function parseCSVLine(line) {
@@ -200,11 +178,32 @@ function getCoreEngineDNMap(engine) {
    WELL NORMALIZATION
 ========================= */
 function extractFieldCode(wellName, fieldName) {
-  return normalizeFieldCode("", wellName, fieldName);
+  const name = toSafeString(wellName).toUpperCase();
+  const field = toSafeLower(fieldName);
+
+  if (name.startsWith("ANDR-")) return "ANDR";
+  if (name.startsWith("ABQQ-")) return "ABQQ";
+
+  if (field === "ain dar") return "ANDR";
+  if (field === "abqaiq") return "ABQQ";
+
+  return "";
 }
 
 function normalizeProductionStatus(status) {
-  return normalizeDomainProductionStatus(status);
+  const raw = toSafeString(status);
+  if (!raw) return "Unknown";
+
+  const normalized = toSafeLower(raw);
+
+  if (normalized === "on production") return "On Production";
+  if (normalized === "testing") return "Testing";
+  if (normalized === "standby") return "Standby";
+  if (normalized === "mothball" || normalized === "moth ball") return "Mothball";
+  if (normalized === "shut-in" || normalized === "shut in") return "Shut-in";
+  if (normalized.includes("locked")) return "Locked Potential";
+
+  return raw;
 }
 
 function normalizeOilRate(well) {
@@ -223,11 +222,9 @@ function normalizeWell(well) {
   const wellName = toSafeString(safeWell.well_name || safeWell.name);
   const productionStatus = normalizeProductionStatus(safeWell.production_status);
   const oilRate = normalizeOilRate(safeWell);
-  const fieldCode = normalizeFieldCode(
-    safeWell.field_code,
-    wellName,
-    safeWell.field
-  );
+  const fieldCode = toSafeString(
+    safeWell.field_code || extractFieldCode(wellName, safeWell.field)
+  ).toUpperCase();
 
   return {
     ...safeWell,
@@ -236,7 +233,7 @@ function normalizeWell(well) {
     field_code: fieldCode,
     production_status: productionStatus,
     oil_rate_bopd: oilRate,
-    is_active: normalizeProductionStatus(productionStatus) !== "Shut-in",
+    is_active: toSafeLower(productionStatus) !== "shut-in",
     last_updated: toSafeString(safeWell.last_updated)
   };
 }
@@ -254,11 +251,33 @@ function getNormalizedWells() {
    DN NORMALIZATION
 ========================= */
 function normalizeWorkflowStatus(statusText) {
-  return interpretDNWorkflowStatus(statusText);
+  const s = toSafeLower(statusText);
+
+  if (!s) return "Open";
+  if (s.includes("closed")) return "Closed";
+  if (s.includes("completed")) return "Completed";
+  if (s.includes("not issuing")) return "Waiting";
+  if (s.includes("under rfi")) return "In Progress";
+  if (s.includes("depressurizing")) return "In Progress";
+  if (s.includes("execution started")) return "In Progress";
+
+  return "In Progress";
 }
 
 function normalizeCurrentStep(statusText) {
-  return interpretDNCurrentStep(statusText);
+  const s = toSafeLower(statusText);
+
+  if (!s) return "Field Review";
+  if (s.includes("not issuing package")) return "Package Preparation";
+  if (s.includes("dn not issuing")) return "Package Preparation";
+  if (s.includes("not issuing")) return "Package Preparation";
+  if (s.includes("under rfi")) return "RFI";
+  if (s.includes("depressurizing")) return "Execution";
+  if (s.includes("execution started")) return "Execution";
+  if (s.includes("completed")) return "Execution";
+  if (s.includes("closed")) return "Closeout";
+
+  return "Field Review";
 }
 
 function normalizeProgressValue(progressValue) {
@@ -313,7 +332,7 @@ function normalizeDN(item) {
     progress: progressString,
     workflow_status: workflowStatus,
     current_step: normalizeCurrentStep(latestStatus),
-    is_closed: isDNResolvedStatus(latestStatus)
+    is_closed: workflowStatus === "Closed"
   };
 }
 
@@ -334,7 +353,10 @@ function getLatestDNMap() {
       continue;
     }
 
-    if (compareDNLogRows(row, existing) > 0) {
+    const currentDate = new Date(row?.update_date || 0);
+    const savedDate = new Date(existing?.update_date || 0);
+
+    if (currentDate > savedDate) {
       latestMap.set(dnId, row);
     }
   }
@@ -413,120 +435,16 @@ function getLatestDNsForWell(wellId) {
   return byWell.get(targetWellId) || [];
 }
 
-function getConsistentWells() {
-  if (coreEngine?.wellIndex instanceof Map) {
-    return Array.from(coreEngine.wellIndex.values());
-  }
-  return getNormalizedWells();
-}
-
-function getConsistentDNs() {
-  const dnMap = getCoreEngineDNMap(coreEngine);
-  if (dnMap instanceof Map) {
-    return Array.from(dnMap.values());
-  }
-  return getMergedLatestDNs();
-}
-
-function getConsistentDNsByWellMap() {
-  const byWell = new Map();
-
-  for (const dn of getConsistentDNs()) {
-    const wellId = toSafeString(dn?.well_id);
-    if (!wellId) continue;
-
-    if (!byWell.has(wellId)) {
-      byWell.set(wellId, []);
-    }
-
-    byWell.get(wellId).push(dn);
-  }
-
-  return byWell;
-}
-
-function getConsistentDNsForWell(wellId) {
-  const targetWellId = toSafeString(wellId);
-  if (!targetWellId) return [];
-
-  if (coreEngine && typeof coreEngine.getDNsForWell === "function") {
-    return coreEngine.getDNsForWell(targetWellId) || [];
-  }
-
-  return getLatestDNsForWell(targetWellId);
-}
-
-function getFormationSummary() {
-  if (formationSummaryCache) {
-    return formationSummaryCache;
-  }
-
-  formationSummaryCache = buildFormationOperationalSummary(
-    formationProjects,
-    formationTasks
-  );
-  return formationSummaryCache;
-}
-
-function buildSafeRiskData(wellsData, dnsData) {
-  try {
-    return buildRiskDashboard(wellsData, dnsData);
-  } catch (_error) {
-    return { top_risk_wells: [], top_risk_dns: [] };
-  }
-}
-
-function getGlobalDashboardContext() {
-  if (globalDashboardContextCache) {
-    return globalDashboardContextCache;
-  }
-
-  const wellsData = getConsistentWells();
-  const dnsData = getConsistentDNs();
-  const dnsByWell = getConsistentDNsByWellMap();
-  const riskData = buildSafeRiskData(wellsData, dnsData);
-  const intelligence = buildSystemIntelligence({
-    wells: wellsData,
-    dns: dnsData,
-    formationProjects,
-    formationTasks,
-    riskData,
-    riskItems: Array.isArray(riskData?.top_risk_wells) ? riskData.top_risk_wells : []
-  });
-  const recommendations = generateRecommendations({
-    wells: wellsData,
-    dns: dnsData,
-    formationProjects,
-    formationTasks,
-    risk: riskData,
-    intelligence
-  });
-  const totalRate = calculateTotalRate(wellsData);
-  const dnImpact = calculateDNImpact(wellsData, dnsByWell);
-  const formationSummary = getFormationSummary();
-
-  globalDashboardContextCache = {
-    wells: wellsData,
-    dns: dnsData,
-    dnsByWell,
-    riskData,
-    intelligence,
-    recommendations,
-    totalRate,
-    dnImpact,
-    formationSummary
-  };
-
-  return globalDashboardContextCache;
-}
-
 /* =========================
    PRODUCTION HELPERS
 ========================= */
 function calculateTotalRate(wellsData) {
   return (Array.isArray(wellsData) ? wellsData : [])
     .map(normalizeWell)
-    .filter((well) => isProducingStatus(well.production_status))
+    .filter((well) => {
+      const status = toSafeLower(well.production_status);
+      return status === "on production" || status === "testing";
+    })
     .reduce((sum, well) => sum + toNumber(well.oil_rate_bopd, 0), 0);
 }
 
@@ -578,20 +496,36 @@ function calculateProductionDrop(history) {
 }
 
 function calculateDNImpact(normalizedWells, latestDNsByWell) {
-  const impact = calculateOperationalDNImpact(
-    Array.isArray(normalizedWells) ? normalizedWells : [],
-    latestDNsByWell
-  );
+  const wellsList = Array.isArray(normalizedWells) ? normalizedWells : [];
+  const dnByWell = latestDNsByWell instanceof Map ? latestDNsByWell : new Map();
+
+  let lostProduction = 0;
+  let affectedWells = 0;
+
+  for (const well of wellsList) {
+    const wellId = toSafeString(well?.well_id || well?.id);
+    const status = toSafeLower(well?.production_status);
+    const rate = toNumber(well?.oil_rate_bopd, 0);
+    const wellDNs = dnByWell.get(wellId) || [];
+
+    const hasActiveDN = wellDNs.some((dn) => !dn.is_closed);
+    const isProducing = status === "on production" || status === "testing";
+
+    if (!isProducing && hasActiveDN) {
+      lostProduction += rate;
+      affectedWells += 1;
+    }
+  }
 
   return {
-    lost_production: toNumber(impact?.total_estimated_loss_bopd, 0),
-    affected_wells: toNumber(impact?.impacted_wells_count, 0)
+    lost_production: lostProduction,
+    affected_wells: affectedWells
   };
 }
 
 function getTopAndLowWells(normalizedWells) {
   const producing = (Array.isArray(normalizedWells) ? normalizedWells : []).filter(
-    (w) => normalizeProductionStatus(w.production_status) === "On Production"
+    (w) => toSafeLower(w.production_status) === "on production"
   );
 
   const sorted = [...producing].sort(
@@ -611,23 +545,17 @@ function loadData() {
   const wellsPath = path.join(__dirname, "data", "wells.csv");
   const dnLogsPath = path.join(__dirname, "data", "dn_logs.csv");
   const dnMasterPath = path.join(__dirname, "data", "dn_master.csv");
-  const formationProjectsPath = path.join(__dirname, "data", "formation_projects.csv");
-  const formationTasksPath = path.join(__dirname, "data", "formation_tasks.csv");
 
   wells = parseCSV(wellsPath);
   dnLogs = parseCSV(dnLogsPath);
   dnMaster = parseCSV(dnMasterPath);
-  formationProjects = parseCSV(formationProjectsPath);
-  formationTasks = parseCSV(formationTasksPath);
 
   invalidateDataCaches();
 
   console.log("Data loaded successfully");
   console.log(`Wells loaded: ${wells.length}`);
   console.log(`DN logs loaded: ${dnLogs.length}`);
-console.log(`DN master loaded: ${dnMaster.length}`);
-console.log(`Formation projects loaded: ${formationProjects.length}`);
-console.log(`Formation tasks loaded: ${formationTasks.length}`);
+  console.log(`DN master loaded: ${dnMaster.length}`);
 }
 
 /* =========================
@@ -635,7 +563,7 @@ console.log(`Formation tasks loaded: ${formationTasks.length}`);
 ========================= */
 function findWell(question) {
   const q = toSafeLower(question);
-  const normalizedWells = getConsistentWells();
+  const normalizedWells = getNormalizedWells();
 
   const match = q.match(
     /\b(?:well[-\s]?(\d+)|((?:andr|abqq)[-\s]?\d{3,4}))\b/i
@@ -758,28 +686,6 @@ function detectIntent(question) {
   return "unknown";
 }
 
-function detectExecutiveAskIntent(question) {
-  const q = toSafeLower(question);
-
-  if (q.includes("focus now") || q.includes("where should i focus") || q.includes("what should i focus")) {
-    return "focus_now";
-  }
-
-  if (q.includes("biggest issue") || q.includes("main issue") || q.includes("biggest problem")) {
-    return "biggest_issue";
-  }
-
-  if (q.includes("which field needs attention") || q.includes("field needs attention") || q.includes("which field needs the most attention")) {
-    return "field_attention";
-  }
-
-  if (q.includes("highest gain") || q.includes("highest upside") || q.includes("what gives the highest gain")) {
-    return "highest_gain";
-  }
-
-  return "";
-}
-
 /* =========================
    ROUTE HELPERS
 ========================= */
@@ -789,49 +695,6 @@ function formatIssueForAsk(dn) {
   return {
     ...normalized,
     type: normalized.dn_type || "Unknown"
-  };
-}
-
-function buildExecutiveAskResponse(question) {
-  const executiveIntent = detectExecutiveAskIntent(question);
-  if (!executiveIntent) return null;
-
-  const context = getGlobalDashboardContext();
-  const executiveCommand = context.intelligence?.executive_command || null;
-  const summary = context.intelligence?.summary || "";
-  const topAction = executiveCommand?.top_action || null;
-  const fieldCommand = executiveCommand?.field_command || {};
-  const mode = executiveCommand?.mode || {};
-
-  let message = summary || "No executive summary available.";
-
-  if (executiveIntent === "focus_now") {
-    message = topAction?.title
-      ? `${topAction.title} in ${topAction.field_code} should be acted on now. ${topAction.reasoning || ""}`.trim()
-      : summary || "No immediate executive action identified.";
-  } else if (executiveIntent === "biggest_issue") {
-    const pressureField = context.intelligence?.enhancements?.executive_signals?.biggest_operational_pressure_field;
-    message = pressureField
-      ? `${pressureField} is carrying the biggest operational pressure. ${mode.explanation || summary}`.trim()
-      : summary || "No dominant issue identified.";
-  } else if (executiveIntent === "field_attention") {
-    message = fieldCommand?.immediate_action_field
-      ? `${fieldCommand.immediate_action_field} needs the most executive attention right now, while ${fieldCommand.monitoring_field || "the other field"} can be monitored more closely.`
-      : summary || "No field attention signal identified.";
-  } else if (executiveIntent === "highest_gain") {
-    const gainField = fieldCommand?.highest_gain_opportunity_field;
-    const gainBopd = context.intelligence?.enhancements?.gain_vs_loss?.formation_gain_bopd;
-    message = gainField
-      ? `${gainField} carries the strongest gain opportunity, with about ${toNumber(gainBopd, 0)} BOPD of current formation upside.`
-      : summary || "No gain opportunity identified.";
-  }
-
-  return {
-    message,
-    summary,
-    executive_command: executiveCommand,
-    field_command: fieldCommand,
-    mode
   };
 }
 
@@ -846,11 +709,6 @@ app.post("/ask", (req, res) => {
       return res.status(400).json({ error: "Question is required" });
     }
 
-    const executiveResponse = buildExecutiveAskResponse(question);
-    if (executiveResponse) {
-      return res.json(executiveResponse);
-    }
-
     const normalizedWell = findWell(question);
 
     if (!normalizedWell) {
@@ -858,7 +716,7 @@ app.post("/ask", (req, res) => {
     }
 
     const intent = detectIntent(question);
-    const latestDNs = getConsistentDNsForWell(normalizedWell.well_id || normalizedWell.id);
+    const latestDNs = getLatestDNsForWell(normalizedWell.well_id || normalizedWell.id);
     const normalizedIssues = latestDNs.map(formatIssueForAsk);
 
     if (intent === "summary") {
@@ -974,8 +832,8 @@ app.post("/ask", (req, res) => {
 ========================= */
 app.get("/dashboard/summary", (req, res) => {
   try {
-    const context = getGlobalDashboardContext();
-    const totalRate = context.totalRate;
+    const normalizedWells = getNormalizedWells();
+    const totalRate = calculateTotalRate(normalizedWells);
     const hourlyAverage = calculateHourlyAverage(productionHistory);
     const dailyAverage = calculateDailyAverage(productionHistory);
 
@@ -996,12 +854,11 @@ app.get("/dashboard/summary", (req, res) => {
 ========================= */
 app.get("/dashboard/overview", (req, res) => {
   try {
-    const context = getGlobalDashboardContext();
-    const normalizedWells = context.wells;
-    const latestDNs = context.dns;
-    const latestDNsByWell = context.dnsByWell;
+    const normalizedWells = getNormalizedWells();
+    const latestDNs = getMergedLatestDNs();
+    const latestDNsByWell = getLatestDNsByWellMap();
 
-    const totalRate = context.totalRate;
+    const totalRate = calculateTotalRate(normalizedWells);
     const hourlyAverage = calculateHourlyAverage(productionHistory);
     const dailyAverage = calculateDailyAverage(productionHistory);
 
@@ -1020,19 +877,19 @@ app.get("/dashboard/overview", (req, res) => {
     };
 
     normalizedWells.forEach((w) => {
-      const rawStatus = normalizeProductionStatus(w.production_status);
+      const rawStatus = toSafeLower(w.production_status);
 
-      if (rawStatus === "Locked Potential") {
+      if (rawStatus.includes("locked")) {
         statusCounts.locked_potential += 1;
-      } else if (rawStatus === "On Production") {
+      } else if (rawStatus === "on production") {
         statusCounts.on_production += 1;
-      } else if (rawStatus === "Testing") {
+      } else if (rawStatus === "testing") {
         statusCounts.testing += 1;
-      } else if (rawStatus === "Standby") {
+      } else if (rawStatus === "standby") {
         statusCounts.standby += 1;
-      } else if (rawStatus === "Mothball") {
+      } else if (rawStatus === "mothball" || rawStatus === "moth ball") {
         statusCounts.mothball += 1;
-      } else if (rawStatus === "Shut-in") {
+      } else if (rawStatus === "shut-in" || rawStatus === "shut in") {
         statusCounts.shut_in += 1;
       }
     });
@@ -1042,8 +899,10 @@ app.get("/dashboard/overview", (req, res) => {
 
     normalizedWells.forEach((w) => {
       const rate = toNumber(w.oil_rate_bopd, 0);
-      const field = normalizeFieldCode(w.field_code, w.well_name, w.field);
-      const includeInProduction = isProducingStatus(w.production_status);
+      const field = toSafeString(w.field_code).toUpperCase();
+      const status = toSafeLower(w.production_status);
+      const includeInProduction =
+        status === "on production" || status === "testing";
 
       if (!includeInProduction) return;
 
@@ -1089,7 +948,7 @@ app.get("/dashboard/overview", (req, res) => {
     }
 
     const productionTrend = calculateProductionDrop(productionHistory);
-    const dnImpact = context.dnImpact;
+    const dnImpact = calculateDNImpact(normalizedWells, latestDNsByWell);
     const performance = getTopAndLowWells(normalizedWells);
 
     return res.json({
@@ -1132,7 +991,7 @@ app.get("/dashboard/overview", (req, res) => {
 app.get("/dashboard/risk", (req, res) => {
   try {
     if (!coreEngine) {
-      const fallbackRisk = buildRiskDashboard(getConsistentWells(), getConsistentDNs());
+      const fallbackRisk = buildRiskDashboard(getNormalizedWells(), getMergedLatestDNs());
       return res.json({
         top_risk_wells: Array.isArray(fallbackRisk?.top_risk_wells)
           ? fallbackRisk.top_risk_wells.slice(0, 10)
@@ -1206,27 +1065,28 @@ app.get("/dashboard/risk", (req, res) => {
 ========================= */
 app.get("/dashboard/intelligence", (req, res) => {
   try {
-    const context = getGlobalDashboardContext();
-    const normalizedWells = context.wells;
-    const latestDNsByWell = context.dnsByWell;
-    const executionData = buildExecutionPlan(normalizedWells, latestDNsByWell, { topN: 20 });
+    const safeWells = getNormalizedWells();
+    const safeDNs = getMergedLatestDNs();
 
-    return res.json({
-  success: true,
+    let safeRiskData = null;
 
-  intelligence: context.intelligence,
+    try {
+      safeRiskData = buildRiskDashboard(safeWells, safeDNs);
+    } catch (riskError) {
+      console.error("Risk intelligence dependency failed:", riskError.message);
+      safeRiskData = null;
+    }
 
-  execution: {
-    summary: executionData.summary,
+    const intelligence = buildSystemIntelligence({
+      wells: safeWells,
+      dns: safeDNs,
+      riskData: safeRiskData,
+      riskItems: Array.isArray(safeRiskData?.top_risk_wells)
+        ? safeRiskData.top_risk_wells
+        : []
+    });
 
-    fields: {
-      ANDR: executionData.by_field?.ANDR || [],
-      ABQQ: executionData.by_field?.ABQQ || []
-    },
-
-    top_actions: executionData.execution_plan || []
-  }
-});
+    return res.json(intelligence);
   } catch (error) {
     console.error("Error in /dashboard/intelligence:", error);
     return res.status(500).json({ error: "Internal server error" });
@@ -1238,10 +1098,9 @@ app.get("/dashboard/intelligence", (req, res) => {
 ========================= */
 app.get("/dashboard/system", (req, res) => {
   try {
-    const context = getGlobalDashboardContext();
-    const normalizedWells = context.wells;
-    const latestDNs = context.dns;
-    const latestDNsByWell = context.dnsByWell;
+    const normalizedWells = getNormalizedWells();
+    const latestDNs = getMergedLatestDNs();
+    const latestDNsByWell = getLatestDNsByWellMap();
 
     const overviewSection = dashboardBuilders.buildOverviewSection(
       normalizedWells,
@@ -1272,9 +1131,22 @@ app.get("/dashboard/system", (req, res) => {
       }
     }
 
-    const intelligenceSection = dashboardBuilders.buildIntelligenceSection(
-      context.intelligence
-    );
+    let intelligenceSection = dashboardBuilders.buildIntelligenceSection(null);
+
+    try {
+      const safeRiskData = buildRiskDashboard(normalizedWells, latestDNs);
+      const intelligence = buildSystemIntelligence({
+        wells: normalizedWells,
+        dns: latestDNs,
+        riskData: safeRiskData,
+        riskItems: Array.isArray(safeRiskData?.top_risk_wells)
+          ? safeRiskData.top_risk_wells
+          : []
+      });
+      intelligenceSection = dashboardBuilders.buildIntelligenceSection(intelligence);
+    } catch (intError) {
+      console.error("Intelligence section build failed:", intError.message);
+    }
 
     return res.json({
       generated_at: new Date().toISOString(),
@@ -1282,8 +1154,7 @@ app.get("/dashboard/system", (req, res) => {
       production: productionSection,
       dn: dnSection,
       risk: riskSection,
-      intelligence: intelligenceSection,
-      formation: context.formationSummary
+      intelligence: intelligenceSection
     });
   } catch (error) {
     console.error("Error in /dashboard/system:", error);
@@ -1296,9 +1167,9 @@ app.get("/dashboard/system", (req, res) => {
 ========================= */
 app.get("/dashboard/operations", (req, res) => {
   try {
-    const normalizedWells = getConsistentWells();
-    const latestDNs = getConsistentDNs();
-    const latestDNsByWell = getConsistentDNsByWellMap();
+    const normalizedWells = getNormalizedWells();
+    const latestDNs = getMergedLatestDNs();
+    const latestDNsByWell = getLatestDNsByWellMap();
 
     const statusCounts = {
       on_production: 0,
@@ -1310,19 +1181,19 @@ app.get("/dashboard/operations", (req, res) => {
     };
 
     normalizedWells.forEach((w) => {
-      const rawStatus = normalizeProductionStatus(w.production_status);
+      const rawStatus = toSafeLower(w.production_status);
 
-      if (rawStatus === "Locked Potential") {
+      if (rawStatus.includes("locked")) {
         statusCounts.locked_potential += 1;
-      } else if (rawStatus === "On Production") {
+      } else if (rawStatus === "on production") {
         statusCounts.on_production += 1;
-      } else if (rawStatus === "Testing") {
+      } else if (rawStatus === "testing") {
         statusCounts.testing += 1;
-      } else if (rawStatus === "Standby") {
+      } else if (rawStatus === "standby") {
         statusCounts.standby += 1;
-      } else if (rawStatus === "Mothball") {
+      } else if (rawStatus === "mothball" || rawStatus === "moth ball") {
         statusCounts.mothball += 1;
-      } else if (rawStatus === "Shut-in") {
+      } else if (rawStatus === "shut-in" || rawStatus === "shut in") {
         statusCounts.shut_in += 1;
       }
     });
@@ -1434,7 +1305,34 @@ app.get("/dashboard/operations", (req, res) => {
 ========================= */
 app.get("/dashboard/recommendations", (req, res) => {
   try {
-    return res.json(getGlobalDashboardContext().recommendations);
+    const normalizedWells = getNormalizedWells();
+    const latestDNs = getMergedLatestDNs();
+
+    let riskData;
+    try {
+      riskData = buildRiskDashboard(normalizedWells, latestDNs);
+    } catch (err) {
+      console.error("Risk build failed in /dashboard/recommendations:", err.message);
+      riskData = { top_risk_wells: [], top_risk_dns: [] };
+    }
+
+    const intelligence = buildSystemIntelligence({
+      wells: normalizedWells,
+      dns: latestDNs,
+      riskData,
+      riskItems: Array.isArray(riskData?.top_risk_wells)
+        ? riskData.top_risk_wells
+        : []
+    });
+
+    const recommendations = generateRecommendations({
+      wells: normalizedWells,
+      dns: latestDNs,
+      risk: riskData,
+      intelligence
+    });
+
+    return res.json(recommendations);
   } catch (error) {
     console.error("Error in /dashboard/recommendations:", error);
     return res.status(500).json({ error: "Failed to generate recommendations" });
@@ -1446,26 +1344,18 @@ app.get("/dashboard/recommendations", (req, res) => {
 ========================= */
 app.get("/dashboard/executive", (req, res) => {
   try {
-    const context = getGlobalDashboardContext();
-    const normalizedWells = getConsistentWells();
-    const latestDNs = getConsistentDNs();
+    const normalizedWells = getNormalizedWells();
+    const latestDNs = getMergedLatestDNs();
 
     const executiveDashboard = dashboardBuilders.buildExecutiveDashboard({
       wells: normalizedWells,
       dns: latestDNs,
-      formationProjects,
-      formationTasks,
       productionHistory,
       monthlyTarget: process.env.MONTHLY_TARGET,
       coreEngine
     });
 
-    return res.json({
-      ...executiveDashboard,
-      summary: context.intelligence?.summary || executiveDashboard.summary || "",
-      executive_command:
-        context.intelligence?.executive_command || executiveDashboard.executive_command || null
-    });
+    return res.json(executiveDashboard);
   } catch (error) {
     console.error("Error in /dashboard/executive:", error);
     return res.status(500).json({ error: "Failed to load executive dashboard" });
@@ -1478,14 +1368,12 @@ app.get("/dashboard/executive", (req, res) => {
 app.get("/dashboard/field/:field_code", (req, res) => {
   try {
     const fieldCode = toSafeString(req.params.field_code).toUpperCase();
-    const normalizedWells = getConsistentWells();
-    const latestDNs = getConsistentDNs();
+    const normalizedWells = getNormalizedWells();
+    const latestDNs = getMergedLatestDNs();
 
     const fieldDashboard = dashboardBuilders.buildFieldDashboard(fieldCode, {
       wells: normalizedWells,
       dns: latestDNs,
-      formationProjects,
-      formationTasks,
       productionHistory,
       monthlyTarget: process.env.MONTHLY_TARGET,
       coreEngine
@@ -1497,7 +1385,7 @@ app.get("/dashboard/field/:field_code", (req, res) => {
 
     return res.json(fieldDashboard);
   } catch (error) {
-    console.error(`Error in /dashboard/well/${req.params.well_id}:`, error);
+    console.error(`Error in /dashboard/field/${req.params.field_code}:`, error);
     return res.status(500).json({ error: "Failed to load field dashboard" });
   }
 });
@@ -1508,14 +1396,12 @@ app.get("/dashboard/field/:field_code", (req, res) => {
 app.get("/dashboard/well/:well_id", (req, res) => {
   try {
     const wellId = toSafeString(req.params.well_id);
-    const normalizedWells = getConsistentWells();
-    const latestDNs = getConsistentDNs();
+    const normalizedWells = getNormalizedWells();
+    const latestDNs = getMergedLatestDNs();
 
     const wellDashboard = dashboardBuilders.buildWellDashboard(wellId, {
       wells: normalizedWells,
       dns: latestDNs,
-      formationProjects,
-      formationTasks,
       productionHistory,
       monthlyTarget: process.env.MONTHLY_TARGET,
       coreEngine
@@ -1529,15 +1415,6 @@ app.get("/dashboard/well/:well_id", (req, res) => {
   } catch (error) {
     console.error(`Error in /dashboard/well/${req.params.well_id}:`, error);
     return res.status(500).json({ error: "Failed to load well dashboard" });
-  }
-});
-
-app.get("/dashboard/formation", (_req, res) => {
-  try {
-    return res.json(getFormationSummary());
-  } catch (error) {
-    console.error("Error in /dashboard/formation:", error);
-    return res.status(500).json({ error: "Failed to load formation dashboard" });
   }
 });
 

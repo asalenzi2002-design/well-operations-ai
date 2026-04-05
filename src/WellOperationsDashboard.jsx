@@ -145,6 +145,28 @@ const fallbackSummary = {
   daily_average: 78337,
 };
 
+const fallbackFormation = {
+  summary: "No active formation projects.",
+  global: {
+    active_projects: 0,
+    blocked_projects_count: 0,
+    tie_in_ready_count: 0,
+    expected_gain_bopd: 0,
+    projects: [],
+  },
+  by_field: {
+    ANDR: { active_projects: 0, expected_gain_bopd: 0, blocked_projects_count: 0, projects: [] },
+    ABQQ: { active_projects: 0, expected_gain_bopd: 0, blocked_projects_count: 0, projects: [] },
+  },
+  intelligence: {
+    field_with_more_progress: "ANDR",
+    field_with_more_gain: "ANDR",
+    blocked_projects: [],
+    top_gain_projects: [],
+    insight: "No active formation-line projects.",
+  },
+};
+
 function formatNumber(value) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return "—";
   return new Intl.NumberFormat().format(Number(value));
@@ -221,6 +243,7 @@ export default function WellOperationsDashboard() {
   const [risk, setRisk] = useState(fallbackRisk);
   const [intelligence, setIntelligence] = useState(fallbackIntelligence);
   const [summary, setSummary] = useState(fallbackSummary);
+  const [formation, setFormation] = useState(fallbackFormation);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
@@ -232,17 +255,19 @@ export default function WellOperationsDashboard() {
       else setLoading(true);
       setError("");
 
-      const [overviewData, riskData, intelligenceData, summaryData] = await Promise.all([
+      const [overviewData, riskData, intelligenceData, summaryData, formationData] = await Promise.all([
         fetchJson("/dashboard/overview").catch(() => fallbackOverview),
         fetchJson("/dashboard/risk").catch(() => fallbackRisk),
         fetchJson("/dashboard/intelligence").catch(() => fallbackIntelligence),
         fetchJson("/dashboard/summary").catch(() => fallbackSummary),
+        fetchJson("/dashboard/formation").catch(() => fallbackFormation),
       ]);
 
       setOverview(normalizeOverview(overviewData));
       setRisk(riskData || fallbackRisk);
       setIntelligence(intelligenceData || fallbackIntelligence);
       setSummary(summaryData || fallbackSummary);
+      setFormation(formationData || fallbackFormation);
     } catch (err) {
       setError(err.message || "Failed to load dashboard data.");
     } finally {
@@ -569,13 +594,65 @@ export default function WellOperationsDashboard() {
 
           <TabsContent value="formation" className="space-y-6">
             <SectionTitle icon={CheckCircle2} title="New Formation Line" subtitle="Standalone workflow block, not mixed with DN or HIPS." />
-            <Card className="rounded-2xl">
-              <CardContent className="p-6">
-                <div className="rounded-2xl border border-dashed p-8 text-sm text-muted-foreground">
-                  This block is ready for a dedicated workflow card list, milestones, aging tracker, and ownership model once the Formation Line backend dataset is added.
-                </div>
-              </CardContent>
-            </Card>
+            <div className="grid gap-4 md:grid-cols-4">
+              <KPI title="Active Projects" value={formatNumber(formation.global?.active_projects || 0)} hint="Standalone formation workflow" icon={CheckCircle2} />
+              <KPI title="Tie-In Ready" value={formatNumber(formation.global?.tie_in_ready_count || 0)} hint="Ready for production handoff" icon={Target} />
+              <KPI title="Blocked" value={formatNumber(formation.global?.blocked_projects_count || 0)} hint="Requires unblock action" icon={AlertTriangle} />
+              <KPI title="Gain Potential" value={formatNumber(formation.global?.expected_gain_bopd || 0)} hint="Estimated production upside" icon={TrendingUp} />
+            </div>
+
+            <Alert className="rounded-2xl">
+              <AlertTitle>Formation Intelligence</AlertTitle>
+              <AlertDescription>
+                {formation.intelligence?.insight || "No formation-line insight available."}
+              </AlertDescription>
+            </Alert>
+
+            <div className="grid gap-4 xl:grid-cols-3">
+              <Card className="rounded-2xl xl:col-span-2">
+                <CardHeader>
+                  <CardTitle>Formation Projects</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {(formation.global?.projects || []).map((project) => (
+                    <div key={project.project_id} className="rounded-2xl border p-4">
+                      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <p className="font-semibold">{project.project_name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {project.field_code} • {project.location} • {project.workflow_status} • {project.readiness_state}
+                          </p>
+                        </div>
+                        <Badge variant="outline">{formatNumber(project.estimated_gain_bopd)} BOPD</Badge>
+                      </div>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {project.progress_percent}% progress • Dependencies: {(project.dependencies || []).join(", ") || "None"}
+                      </p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl">
+                <CardHeader>
+                  <CardTitle>Blocked Projects</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {(formation.intelligence?.blocked_projects || []).map((project) => (
+                    <div key={project.project_id} className="rounded-2xl border p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-semibold">{project.project_id}</p>
+                        <Badge variant="destructive">{project.field_code}</Badge>
+                      </div>
+                      <p className="mt-2 text-sm">{project.project_name}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {(project.blocking_items || []).map((item) => item.reason).join(" • ") || "Blocked"}
+                      </p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="field" className="space-y-6">

@@ -27,7 +27,6 @@ const {
 const {
   buildFormationOperationalSummary
 } = require("./src/logic/formationLineEngine");
-const { buildExecutionPlan } = require("./src/logic/executionEngine");
 
 const app = express();
 app.use(express.json());
@@ -625,9 +624,9 @@ function loadData() {
   console.log("Data loaded successfully");
   console.log(`Wells loaded: ${wells.length}`);
   console.log(`DN logs loaded: ${dnLogs.length}`);
-console.log(`DN master loaded: ${dnMaster.length}`);
-console.log(`Formation projects loaded: ${formationProjects.length}`);
-console.log(`Formation tasks loaded: ${formationTasks.length}`);
+  console.log(`DN master loaded: ${dnMaster.length}`);
+  console.log(`Formation projects loaded: ${formationProjects.length}`);
+  console.log(`Formation tasks loaded: ${formationTasks.length}`);
 }
 
 /* =========================
@@ -1206,27 +1205,7 @@ app.get("/dashboard/risk", (req, res) => {
 ========================= */
 app.get("/dashboard/intelligence", (req, res) => {
   try {
-    const context = getGlobalDashboardContext();
-    const normalizedWells = context.wells;
-    const latestDNsByWell = context.dnsByWell;
-    const executionData = buildExecutionPlan(normalizedWells, latestDNsByWell, { topN: 20 });
-
-    return res.json({
-  success: true,
-
-  intelligence: context.intelligence,
-
-  execution: {
-    summary: executionData.summary,
-
-    fields: {
-      ANDR: executionData.by_field?.ANDR || [],
-      ABQQ: executionData.by_field?.ABQQ || []
-    },
-
-    top_actions: executionData.execution_plan || []
-  }
-});
+    return res.json(getGlobalDashboardContext().intelligence);
   } catch (error) {
     console.error("Error in /dashboard/intelligence:", error);
     return res.status(500).json({ error: "Internal server error" });
@@ -1497,7 +1476,7 @@ app.get("/dashboard/field/:field_code", (req, res) => {
 
     return res.json(fieldDashboard);
   } catch (error) {
-    console.error(`Error in /dashboard/well/${req.params.well_id}:`, error);
+    console.error(`Error in /dashboard/field/${req.params.field_code}:`, error);
     return res.status(500).json({ error: "Failed to load field dashboard" });
   }
 });

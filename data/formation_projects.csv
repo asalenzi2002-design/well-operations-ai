@@ -1,0 +1,4 @@
+project_id,project_name,field_code,facility,project_type,status,overall_progress_percent,readiness_state,expected_gain_bopd,priority,owner,start_date,target_date,last_update
+FL-ANDR-001,AD-4&6 Formation Line Water Line Upgrade,ANDR,AD-4&6,water_line_upgrade,construction_in_progress,58,construction_in_progress,1800,critical,FAHD ALQAHTANI,2026-02-10,2026-05-20,2026-04-04
+FL-ANDR-002,ANDR North Formation Tie-In Loop,ANDR,ANDR NORTH,formation_loop,engineering_ready,42,partial_ready,950,high,MOHAMMED ALHARBI,2026-03-01,2026-06-10,2026-04-03
+FL-ABQQ-001,ABQQ South Formation Header Debottleneck,ABQQ,ABQQ SOUTH,header_debottleneck,permit_blocked,36,permit_blocked,1250,high,SAEED ALDOSARI,2026-02-20,2026-06-01,2026-04-02

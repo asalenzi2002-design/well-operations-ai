@@ -1,7 +1,7 @@
 // src/core/normalizer.js
 // Enhanced normalization using domain entities (parallel, non-destructive)
 
-const { Well, DN } = require('./domain');
+const { Well, DN, compareDNLogRows } = require('./domain');
 
 function createWellFromRaw(rawData) {
   try {
@@ -51,10 +51,7 @@ function buildDNLatestStateMap(dnLogsArray, dnMasterArray) {
       continue;
     }
 
-    const currentDate = new Date(row.update_date || 0);
-    const savedDate = new Date(latestMap[dnId].update_date || 0);
-
-    if (currentDate > savedDate) {
+    if (compareDNLogRows(row, latestMap[dnId]) > 0) {
       latestMap[dnId] = row;
     }
   }

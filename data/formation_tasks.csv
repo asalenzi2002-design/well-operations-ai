@@ -1,0 +1,17 @@
+task_id,project_id,workstream,task_name,task_category,status,progress_percent,remaining_count,dependency_type,blocker_reason,owner,last_update
+FLT-ANDR-001,FL-ANDR-001,ON_PLOT,Spool fabrication complete,fabrication,completed,100,0,none,,CRPO,2026-04-01
+FLT-ANDR-002,FL-ANDR-001,ON_PLOT,Spool installation in progress,installation,in_progress,60,4,execution_sequence,,CRPO,2026-04-04
+FLT-ANDR-003,FL-ANDR-001,ON_PLOT,Additional depth excavation in progress,civil,in_progress,55,1,site_access,,CIVIL,2026-04-04
+FLT-ANDR-004,FL-ANDR-001,OFF_PLOT,Off plot spools fabricated,fabrication,completed,100,0,none,,CRPO,2026-03-30
+FLT-ANDR-005,FL-ANDR-001,OFF_PLOT,Installation under preparation,construction_prep,in_progress,45,18,material_release,,CONSTRUCTION,2026-04-04
+FLT-ANDR-006,FL-ANDR-001,TIE_IN_PREP,TI/1 under preparation,tie_in_prep,in_progress,40,1,shutdown_window,,OPS,2026-04-03
+FLT-ANDR-007,FL-ANDR-001,TIE_IN_PREP,TI/2 under preparation,tie_in_prep,in_progress,35,1,shutdown_window,,OPS,2026-04-03
+FLT-ANDR-008,FL-ANDR-001,PERMITS_SECURITY,Patrol road security permission approved,permit,completed,100,0,none,,SECURITY,2026-04-02
+FLT-ANDR-009,FL-ANDR-002,ON_PLOT,North loop on plot supports installation,construction,in_progress,55,3,execution_sequence,,CRPO,2026-04-03
+FLT-ANDR-010,FL-ANDR-002,OFF_PLOT,North loop off plot trenching,construction,in_progress,35,6,civil_front,,CIVIL,2026-04-02
+FLT-ANDR-011,FL-ANDR-002,TIE_IN_PREP,Tie in package review,engineering,in_progress,25,2,engineering_review,,OPS ENGINEERING,2026-04-01
+FLT-ANDR-012,FL-ANDR-002,PERMITS_SECURITY,Excavation permit routing,permit,in_progress,70,1,permit_approval,,PERMIT TEAM,2026-04-03
+FLT-ABQQ-001,FL-ABQQ-001,ON_PLOT,Header spool installation staging,construction,in_progress,40,5,site_release,,CRPO,2026-04-02
+FLT-ABQQ-002,FL-ABQQ-001,OFF_PLOT,Off plot crossing preparation,construction_prep,in_progress,30,8,road_crossing_approval,Road crossing approval pending with municipality,CONSTRUCTION,2026-04-02
+FLT-ABQQ-003,FL-ABQQ-001,TIE_IN_PREP,Tie in shutdown slot confirmation,tie_in_prep,not_started,10,2,shutdown_window,Shutdown window not confirmed,OPS,2026-04-01
+FLT-ABQQ-004,FL-ABQQ-001,PERMITS_SECURITY,Security and excavation permit package,permit,in_progress,15,2,permit_approval,Security escort permit pending,SECURITY,2026-04-02

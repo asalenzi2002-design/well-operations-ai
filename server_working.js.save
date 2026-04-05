@@ -1,0 +1,846 @@
+require("dotenv").config();
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+const { mockProductionRecords } = require("./dashboardEngine");
+const CoreEngine = require("./src/core");
+const app = express();
+app.use(express.json());
+
+const PORT = process.env.PORT || 3002;
+
+let dnMaster = [];
+let wells = [];
+let dnLogs = [];
+let coreEngine = null;
+const productionHistory = [
+  { timestamp: "2026-04-02T00:00:00Z", bopd: 980 },
+  { timestamp: "2026-04-02T01:00:00Z", bopd: 1020 },
+  { timestamp: "2026-04-02T02:00:00Z", bopd: 995 },
+  { timestamp: "2026-04-02T03:00:00Z", bopd: 1010 },
+  { timestamp: "2026-04-02T04:00:00Z", bopd: 970 },
+  { timestamp: "2026-04-02T05:00:00Z", bopd: 990 },
+  { timestamp: "2026-04-02T06:00:00Z", bopd: 1005 },
+  { timestamp: "2026-04-02T07:00:00Z", bopd: 1030 },
+  { timestamp: "2026-04-02T08:00:00Z", bopd: 1060 },
+  { timestamp: "2026-04-02T09:00:00Z", bopd: 1045 },
+  { timestamp: "2026-04-02T10:00:00Z", bopd: 1080 },
+  { timestamp: "2026-04-02T11:00:00Z", bopd: 1075 }
+];
+
+/* =========================
+   PRODUCTION HELPERS
+========================= */
+function calculateTotalRate(wellsData) {
+  return wellsData
+    .filter((well) => {
+      const status = String(well.production_status || "").toLowerCase();
+      return status === "on production" || status === "testing";
+    })
+    .reduce((sum, well) => {
+      const rate = Number(well.oil_rate_bopd || 0);
+      return sum + (Number.isFinite(rate) ? rate : 0);
+    }, 0);
+}
+
+function calculateHourlyAverage(history) {
+  if (!Array.isArray(history) || history.length === 0) return 0;
+
+  const latest = history[history.length - 1];
+  const value = Number(latest && latest.bopd ? latest.bopd : 0);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function calculateDailyAverage(history) {
+  if (!Array.isArray(history) || history.length === 0) return 0;
+
+  const total = history.reduce((sum, item) => {
+    const value = Number(item && item.bopd ? item.bopd : 0);
+    return sum + (Number.isFinite(value) ? value : 0);
+  }, 0);
+
+  return Math.round(total / history.length);
+}
+
+function calculateProductionDrop(productionHistory) {
+  if (!productionHistory || productionHistory.length < 2) {
+    return {
+      latest: 0,
+      previous: 0,
+      delta: 0,
+      percent: 0,
+      direction: "stable"
+    };
+  }
+
+  const sorted = [...productionHistory].sort(
+    (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+  );
+
+  // IMPORTANT:
+  // your data uses "bopd", not "rate"
+  const latest = Number(sorted[0].bopd || 0);
+  const previous = Number(sorted[1].bopd || 0);
+
+  const delta = latest - previous;
+  const percent =
+    previous > 0 ? Number(((delta / previous) * 100).toFixed(1)) : 0;
+
+  let direction = "stable";
+  if (delta > 0) direction = "up";
+  if (delta < 0) direction = "down";
+
+  return {
+    latest,
+    previous,
+    delta,
+    percent,
+    direction
+  };
+}
+
+function calculateDNImpact(wells) {
+  let lostProduction = 0;
+  let affectedWells = 0;
+
+  wells.forEach((w) => {
+    const nw = normalizeWell(w);
+    const rate = Number(nw.oil_rate_bopd) || 0;
+    const status = String(nw.production_status || "").toLowerCase();
+
+    const dns = getLatestDNsForWell(nw.well_id || nw.id) || [];
+
+    const hasActiveDN = dns.some((dn) => {
+      const workflowStatus = normalizeWorkflowStatus(
+        dn.dn_status || dn.status || ""
+      );
+      return String(workflowStatus).toLowerCase().trim() !== "closed";
+    });
+
+    const isProducing =
+      status === "on production" || status === "testing";
+
+    if (!isProducing && hasActiveDN) {
+      lostProduction += rate;
+      affectedWells++;
+    }
+  });
+
+  return {
+    lost_production: lostProduction,
+    affected_wells: affectedWells
+  };
+}
+
+function getTopAndLowWells(wells) {
+  const producing = wells
+    .map(normalizeWell)
+    .filter(
+      (w) => String(w.production_status || "").toLowerCase() === "on production"
+    );
+
+  const sorted = producing.sort((a, b) => b.oil_rate_bopd - a.oil_rate_bopd);
+
+  return {
+    top: sorted.slice(0, 3),
+    low: sorted.slice(-3)
+  };
+}
+
+/* =========================
+   CSV LOADER
+========================= */
+function parseCSV(filePath) {
+  const raw = fs.readFileSync(filePath, "utf8").trim();
+  const lines = raw.split(/\r?\n/);
+
+  if (lines.length === 0) return [];
+
+  const headers = lines[0].split(",").map((h) => h.trim());
+
+  return lines.slice(1).map((line) => {
+    const values = line.split(",").map((v) => v.trim());
+    const row = {};
+
+    headers.forEach((header, index) => {
+      row[header] = values[index] !== undefined ? values[index] : "";
+    });
+
+    return row;
+  });
+}
+
+/* =========================
+   LOAD DATA
+========================= */
+function loadData() {
+const wellsPath = path.join(__dirname, "data", "wells.csv");
+const dnLogsPath = path.join(__dirname, "data", "dn_logs.csv");
+const dnMasterPath = path.join(__dirname, "data", "dn_master.csv");
+
+  wells = parseCSV(wellsPath);
+  dnLogs = parseCSV(dnLogsPath);
+  dnMaster = parseCSV(dnMasterPath);
+
+  console.log("Data loaded successfully");
+  console.log(`Wells loaded: ${wells.length}`);
+  console.log(`DN logs loaded: ${dnLogs.length}`);
+  console.log(`DN master loaded: ${dnMaster.length}`);
+}
+
+/* =========================
+   HELPERS
+========================= */
+function normalizeText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[_\s]+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .trim();
+}
+
+function extractFieldCode(wellName) {
+  const name = String(wellName || "").toUpperCase().trim();
+
+  if (name.startsWith("ANDR-")) return "ANDR";
+  if (name.startsWith("ABQQ-")) return "ABQQ";
+
+  return "";
+}
+
+function normalizeProductionStatus(status) {
+  const value = String(status || "").trim();
+  if (!value) return "Unknown";
+  return value;
+}
+
+function normalizeOilRate(well) {
+  const raw =
+    well.oil_rate_bopd ??
+    well.oil_rate ??
+    well.oilrate ??
+    well.rate ??
+    0;
+
+  const num = Number(raw);
+  return Number.isFinite(num) ? num : 0;
+}
+
+function normalizeWell(well) {
+  const wellName = String(well.well_name || well.name || "").trim();
+  const productionStatus = normalizeProductionStatus(well.production_status);
+  const oilRate = normalizeOilRate(well);
+
+  let fieldCode = well.field_code || extractFieldCode(wellName);
+
+  if (!fieldCode) {
+    const fieldName = String(well.field || "").toLowerCase().trim();
+
+    if (fieldName === "ain dar") fieldCode = "ANDR";
+    if (fieldName === "abqaiq") fieldCode = "ABQQ";
+  }
+
+  return {
+    ...well,
+    well_id: well.well_id || well.id || "",
+    well_name: wellName,
+    field_code: fieldCode,
+    production_status: productionStatus,
+    oil_rate_bopd: oilRate,
+    is_active: productionStatus.toLowerCase() !== "shut-in",
+    last_updated: well.last_updated || ""
+  };
+}
+
+function normalizeWorkflowStatus(statusText) {
+  const s = String(statusText || "").toLowerCase().trim();
+
+  if (!s) return "Open";
+  if (s.includes("closed")) return "Closed";
+  if (s.includes("completed")) return "Completed";
+  if (s.includes("not issuing")) return "Waiting";
+  if (s.includes("under rfi")) return "In Progress";
+  if (s.includes("depressurizing")) return "In Progress";
+
+  return "In Progress";
+}
+
+function normalizeCurrentStep(statusText) {
+  const s = String(statusText || "").toLowerCase().trim();
+
+  if (s.includes("not issuing package")) return "Package Preparation";
+  if (s.includes("dn not issuing")) return "Package Preparation";
+  if (s.includes("not issuing")) return "Package Preparation";
+  if (s.includes("under rfi")) return "RFI";
+  if (s.includes("depressurizing")) return "Execution";
+  if (s.includes("completed")) return "Execution";
+
+  return "Field Review";
+}
+
+function normalizeDN(item) {
+  const safeItem = item || {};
+  const latestUpdate = String(
+    safeItem.status || safeItem.latest_update || ""
+  ).trim();
+
+  const rawProgress =
+    safeItem.progress_percent ??
+    safeItem.progress ??
+    "0";
+
+  const progressPercent = Number(
+    String(rawProgress).replace("%", "").trim()
+  );
+
+  return {
+    ...safeItem,
+    workflow_status: normalizeWorkflowStatus(latestUpdate),
+    current_step: normalizeCurrentStep(latestUpdate),
+    current_owner_name: safeItem.owner || safeItem.current_owner_name || "",
+    progress_percent: Number.isFinite(progressPercent) ? progressPercent : 0,
+    is_closed: normalizeWorkflowStatus(latestUpdate) === "Closed"
+  };
+}
+
+function findWell(question) {
+  const q = String(question || "").toLowerCase();
+
+  const match = q.match(
+    /\b(?:well[-\s]?(\d+)|((?:andr|abqq)[-\s]?\d{3,4}))\b/i
+  );
+
+  if (match) {
+    const numericPart = match[1];
+    const fullCode = match[2];
+
+    if (fullCode) {
+      const normalizedTarget = normalizeText(fullCode.replace(/\s+/g, "-"));
+
+      const found = wells.find((w) => {
+        const nw = normalizeWell(w);
+        return normalizeText(nw.well_name) === normalizedTarget;
+      });
+
+      if (found) return normalizeWell(found);
+    }
+
+    if (numericPart) {
+      const candidates = [
+        `well-${numericPart}`,
+        `well ${numericPart}`,
+        `well${numericPart}`,
+        `andr-${numericPart}`,
+        `abqq-${numericPart}`
+      ];
+
+      const found = wells.find((w) => {
+        const nw = normalizeWell(w);
+        const wellName = normalizeText(nw.well_name || "");
+        return candidates.some(
+          (candidate) => wellName === normalizeText(candidate)
+        );
+      });
+
+      if (found) return normalizeWell(found);
+    }
+  }
+
+  const normalizedQuestion = normalizeText(q);
+
+  const directFound = wells.find((w) => {
+    const nw = normalizeWell(w);
+    const wellName = normalizeText(nw.well_name || "");
+    return (
+      normalizedQuestion.includes(wellName) || wellName.includes(normalizedQuestion)
+    );
+  });
+
+  return directFound ? normalizeWell(directFound) : null;
+}
+
+/* =========================
+   PRESERVE EXISTING DN LOGIC
+   latest by dn_id using update_date
+========================= */
+function getLatestDNsForWell(wellId) {
+  const latestMap = {};
+
+  for (const row of dnLogs) {
+    const dnId = row.dn_id;
+    if (!dnId) continue;
+
+    if (!latestMap[dnId]) {
+      latestMap[dnId] = row;
+      continue;
+    }
+
+    const currentDate = new Date(row.update_date || 0);
+    const savedDate = new Date(latestMap[dnId].update_date || 0);
+
+    if (currentDate > savedDate) {
+      latestMap[dnId] = row;
+    }
+  }
+
+  const latestLogs = Object.values(latestMap);
+
+  const merged = latestLogs
+    .map((log) => {
+      const meta = dnMaster.find((d) => String(d.dn_id) === String(log.dn_id));
+      if (!meta) return null;
+
+      return {
+        dn_id: meta.dn_id,
+        well_id: meta.well_id,
+        dn_type: meta.dn_type,
+        progress_percent: meta.progress_percent,
+        priority: meta.priority,
+        created_date: meta.created_date,
+        dn_status: log.status_update,
+        dn_owner: log.updated_by,
+        update_date: log.update_date
+      };
+    })
+    .filter(Boolean);
+
+  return merged.filter(
+    (dn) => String(dn.well_id).trim() === String(wellId).trim()
+  );
+}
+
+function detectIntent(question) {
+  const q = String(question || "").toLowerCase();
+
+  if (
+    q.includes("status") ||
+    q.includes("check") ||
+    q.includes("summary") ||
+    q.includes("overview")
+  ) {
+    return "summary";
+  }
+
+  if (
+    q.includes("oil rate") ||
+    q.includes("bopd") ||
+    q.includes("production rate")
+  ) {
+    return "oil_rate";
+  }
+
+  if (
+    q.includes("owner") ||
+    q.includes("responsible") ||
+    q.includes("who is handling") ||
+    q.includes("who handles")
+  ) {
+    return "owner";
+  }
+
+  if (
+    q.includes("progress") ||
+    q.includes("completed") ||
+    q.includes("%")
+  ) {
+    return "progress";
+  }
+
+  if (
+    q.includes("priority") ||
+    q.includes("high priority") ||
+    q.includes("medium priority") ||
+    q.includes("low priority")
+  ) {
+    return "priority";
+  }
+
+  if (
+    q.includes("issue") ||
+    q.includes("issues") ||
+    q.includes("dn") ||
+    q.includes("dns") ||
+    q.includes("problem") ||
+    q.includes("problems") ||
+    q.includes("leak") ||
+    q.includes("sand encroachment")
+  ) {
+    return "issues";
+  }
+
+  if (
+    q.includes("production") ||
+    q.includes("producing") ||
+    q.includes("on production")
+  ) {
+    return "production_status";
+  }
+
+  return "unknown";
+}
+
+/* =========================
+   ROUTE HELPERS
+========================= */
+function formatIssues(latestDNs) {
+  if (!Array.isArray(latestDNs)) return [];
+
+  return latestDNs.map((dn) => ({
+    dn_id: dn.dn_id || "",
+    type: dn.dn_type || dn.type || "Unknown",
+    status: dn.dn_status || dn.status || "Unknown",
+    owner: dn.dn_owner || dn.owner || "Unknown",
+    progress: dn.progress_percent ? `${dn.progress_percent}%` : "0%",
+    priority: dn.priority || "Unknown",
+    created_date: dn.created_date || "",
+    last_updated: dn.last_updated || dn.update_date || ""
+  }));
+}
+
+/* =========================
+   MAIN ROUTE
+========================= */
+app.post("/ask", (req, res) => {
+  try {
+    const question = req.body.question || "";
+
+    if (!question.trim()) {
+      return res.status(400).json({ error: "Question is required" });
+    }
+
+    const well = findWell(question);
+    console.log("WELL FOUND:", well);
+
+    if (!well) {
+      return res.json({ message: "Well not found" });
+    }
+
+    const normalizedWell = normalizeWell(well);
+    const intent = detectIntent(question);
+
+    const latestDNs = getLatestDNsForWell(
+      normalizedWell.well_id || normalizedWell.id
+    );
+
+    const issues = Array.isArray(formatIssues(latestDNs))
+      ? formatIssues(latestDNs)
+      : [];
+
+    const normalizedIssues = issues.filter(Boolean).map((item) => normalizeDN(item));
+
+    if (intent === "summary") {
+      return res.json({
+        well: normalizedWell.well_name,
+        field_code: normalizedWell.field_code,
+        production_status: normalizedWell.production_status,
+        oil_rate: normalizedWell.oil_rate_bopd,
+        issue_count: normalizedIssues.length,
+        issues: normalizedIssues
+      });
+    }
+
+    if (intent === "production_status") {
+      return res.json({
+        well: normalizedWell.well_name,
+        field_code: normalizedWell.field_code,
+        production_status: normalizedWell.production_status
+      });
+    }
+
+    if (intent === "oil_rate") {
+      return res.json({
+        well: normalizedWell.well_name,
+        field_code: normalizedWell.field_code,
+        oil_rate: normalizedWell.oil_rate_bopd
+      });
+    }
+
+    if (intent === "issues") {
+      return res.json({
+        well: normalizedWell.well_name,
+        field_code: normalizedWell.field_code,
+        issue_count: normalizedIssues.length,
+        issues: normalizedIssues
+      });
+    }
+
+    if (intent === "owner") {
+      return res.json({
+        well: normalizedWell.well_name,
+        field_code: normalizedWell.field_code,
+        issue_count: normalizedIssues.length,
+        issues: normalizedIssues.map((item) => ({
+          dn_id: item.dn_id,
+          type: item.type,
+          owner: item.current_owner_name,
+          workflow_status: item.workflow_status,
+          current_step: item.current_step,
+          progress: item.progress,
+          priority: item.priority,
+          created_date: item.created_date,
+          last_updated: item.last_updated
+        }))
+      });
+    }
+
+    if (intent === "progress") {
+      return res.json({
+        well: normalizedWell.well_name,
+        field_code: normalizedWell.field_code,
+        issue_count: normalizedIssues.length,
+        issues: normalizedIssues.map((item) => ({
+          dn_id: item.dn_id,
+          type: item.type,
+          progress: item.progress,
+          progress_percent: item.progress_percent,
+          workflow_status: item.workflow_status,
+          current_step: item.current_step,
+          owner: item.current_owner_name,
+          priority: item.priority,
+          created_date: item.created_date,
+          last_updated: item.last_updated
+        }))
+      });
+    }
+
+    if (intent === "priority") {
+      return res.json({
+        well: normalizedWell.well_name,
+        field_code: normalizedWell.field_code,
+        issue_count: normalizedIssues.length,
+        issues: normalizedIssues.map((item) => ({
+          dn_id: item.dn_id,
+          type: item.type,
+          priority: item.priority,
+          workflow_status: item.workflow_status,
+          current_step: item.current_step,
+          owner: item.current_owner_name,
+          progress: item.progress,
+          created_date: item.created_date,
+          last_updated: item.last_updated
+        }))
+      });
+    }
+
+    return res.json({
+      well: normalizedWell.well_name,
+      field_code: normalizedWell.field_code,
+      production_status: normalizedWell.production_status,
+      oil_rate: normalizedWell.oil_rate_bopd,
+      issue_count: normalizedIssues.length,
+      issues: normalizedIssues
+    });
+  } catch (error) {
+    console.error("Error in /ask:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+/* =========================
+   DASHBOARD SUMMARY
+========================= */
+app.get("/dashboard/summary", (req, res) => {
+  try {
+    const totalRate = calculateTotalRate(wells);
+    const hourlyAverage = calculateHourlyAverage(productionHistory);
+    const dailyAverage = calculateDailyAverage(productionHistory);
+
+    res.json({
+      total_rate: totalRate,
+      hourly_average: hourlyAverage,
+      daily_average: dailyAverage,
+      unit: "BOPD"
+    });
+  } catch (error) {
+    console.error("Error in /dashboard/summary:", error.message);
+    res.status(500).json({ error: "Failed to load dashboard summary" });
+  }
+});
+
+/* =========================
+   DASHBOARD OVERVIEW
+========================= */
+app.get("/dashboard/overview", (req, res) => {
+  try {
+    const totalRate = calculateTotalRate(wells);
+    const hourlyAverage = calculateHourlyAverage(productionHistory);
+    const dailyAverage = calculateDailyAverage(productionHistory);
+
+    const monthlyTarget = Number(process.env.MONTHLY_TARGET) || 25000;
+    const targetGap = totalRate - monthlyTarget;
+
+    const dnMap = new Map();
+
+    for (const well of wells) {
+      const wellId = well.well_id || well.id;
+      const dns = getLatestDNsForWell(wellId) || [];
+
+      dns.forEach((dn) => {
+        const dnId = String(dn.dn_id || "").trim();
+        if (!dnId) return;
+        dnMap.set(dnId, dn);
+      });
+    }
+
+    const activeDNCount = Array.from(dnMap.values()).filter((dn) => {
+      const status = String(
+        normalizeWorkflowStatus(dn.dn_status || dn.status || "")
+      )
+        .toLowerCase()
+        .trim();
+
+      return status !== "closed";
+    }).length;
+
+    const statusCounts = {
+      on_production: 0,
+      testing: 0,
+      standby: 0,
+      mothball: 0,
+      shut_in: 0,
+      locked_potential: 0
+    };
+
+    wells.forEach((w) => {
+      const nw = normalizeWell(w);
+      const rawStatus = String(nw.production_status || "").toLowerCase().trim();
+
+      if (rawStatus.includes("locked")) {
+        statusCounts.locked_potential++;
+      } else if (rawStatus === "on production") {
+        statusCounts.on_production++;
+      } else if (rawStatus === "testing") {
+        statusCounts.testing++;
+      } else if (rawStatus === "standby") {
+        statusCounts.standby++;
+      } else if (rawStatus === "mothball" || rawStatus === "moth ball") {
+        statusCounts.mothball++;
+      } else if (rawStatus === "shut-in" || rawStatus === "shut in") {
+        statusCounts.shut_in++;
+      }
+    });
+
+    let ainDarRate = 0;
+    let abqaiqRate = 0;
+
+    wells.forEach((w) => {
+      const nw = normalizeWell(w);
+      const rate = Number(nw.oil_rate_bopd) || 0;
+      const field = String(nw.field_code || "").toUpperCase().trim();
+      const status = String(nw.production_status || "").toLowerCase().trim();
+
+      const includeInProduction =
+        status === "on production" || status === "testing";
+
+      console.log("FIELD DEBUG:", {
+        well_name: nw.well_name,
+        field_code: field,
+        production_status: status,
+        oil_rate_bopd: rate,
+        include_in_production: includeInProduction
+      });
+
+      if (!includeInProduction) return;
+
+      if (field === "ANDR") {
+ٍ        ainDarRate += rate;
+      } else if (field === "ABQQ") {
+        abqaiqRate += rate;
+      } else {
+        console.log("UNMAPPED PRODUCING WELL:", {
+          well_name: nw.well_name,
+          field_code: field,
+          oil_rate_bopd: rate
+        });
+      }
+    });
+
+    const totalFieldRate = ainDarRate + abqaiqRate;
+
+    const ainDarPercent =
+      totalFieldRate > 0
+        ? Number(((ainDarRate / totalFieldRate) * 100).toFixed(1))
+        : 0;
+
+    const abqaiqPercent =
+      totalFieldRate > 0
+        ? Number(((abqaiqRate / totalFieldRate) * 100).toFixed(1))
+        : 0;
+
+    const insights = [];
+
+    if (targetGap < 0) {
+      insights.push(`Production is below target by ${Math.abs(targetGap)} BOPD.`);
+    } else if (targetGap > 0) {
+      insights.push(`Production is above target by ${targetGap} BOPD.`);
+    } else {
+      insights.push("Production is exactly on target.");
+    }
+
+    if (ainDarPercent > abqaiqPercent) {
+      insights.push("Ain Dar field is the main contributor.");
+    } else if (abqaiqPercent > ainDarPercent) {
+      insights.push("Abqaiq field is the main contributor.");
+    } else {
+      insights.push("Field contributions are balanced.");
+    }
+
+    if (statusCounts.locked_potential > 0) {
+      insights.push(`${statusCounts.locked_potential} wells have locked potential.`);
+    }
+
+    const productionTrend = calculateProductionDrop(productionHistory);
+    const dnImpact = calculateDNImpact(wells);
+    const performance = getTopAndLowWells(wells);
+
+    res.json({
+      kpis: {
+        total_rate: totalRate,
+        hourly_average: hourlyAverage,
+        daily_average: dailyAverage,
+        monthly_target: monthlyTarget,
+        target_gap: targetGap,
+        active_dn_count: activeDNCount
+      },
+      well_status: {
+        on_production: statusCounts.on_production,
+        testing: statusCounts.testing,
+        standby: statusCounts.standby,
+        mothball: statusCounts.mothball,
+        shut_in: statusCounts.shut_in,
+        locked_potential: statusCounts.locked_potential
+      },
+      field_contribution: {
+        ain_dar_rate: ainDarRate,
+        abqaiq_rate: abqaiqRate,
+        ain_dar_percent: ainDarPercent,
+        abqaiq_percent: abqaiqPercent
+      },
+      insights,
+      production_trend: productionTrend,
+      dn_impact: dnImpact,
+      performance
+    });
+  } catch (error) {
+    console.error("Error in /dashboard/overview:", error);
+    res.status(500).json({ error: "Failed to load dashboard overview" });
+  }
+});
+
+/* =========================
+   START
+========================= */
+loadData();
+function initializeCoreEngineData() {
+  try {
+    coreEngine = CoreEngine.initializeCoreEngine(wells, dnLogs, dnMaster);
+    if (!coreEngine) {
+      console.warn("[CoreEngine] Initialization returned null, advanced features disabled");
+    }
+  } catch (error) {
+    console.error("[CoreEngine] Failed to initialize:", error);
+  }
+}
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});

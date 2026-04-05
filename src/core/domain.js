@@ -28,6 +28,139 @@ const DN_TYPES = {
   TUBING_ISSUE: { name: 'Tubing Issue', severity: 'Medium', impact: 'Variable' }
 };
 
+const DN_WORKFLOW_PRIORITY = {
+  Closed: 4,
+  Completed: 3,
+  'In Progress': 2,
+  Waiting: 1,
+  Open: 0
+};
+
+function normalizeFieldCode(fieldCode, wellName, fieldName) {
+  const direct = String(fieldCode || '').trim().toUpperCase();
+  if (direct === 'ANDR' || direct === 'ABQQ') return direct;
+
+  const name = String(wellName || '').toUpperCase().trim();
+  if (name.startsWith('ANDR-')) return 'ANDR';
+  if (name.startsWith('ABQQ-')) return 'ABQQ';
+
+  const field = String(fieldName || '').toLowerCase().trim();
+  if (field === 'ain dar' || field === 'ain-dar') return 'ANDR';
+  if (field === 'abqaiq' || field === 'abq') return 'ABQQ';
+
+  return 'UNKNOWN';
+}
+
+function normalizeProductionStatus(status) {
+  const normalized = String(status || '').toLowerCase().trim();
+  if (!normalized) return 'Unknown';
+  if (normalized === 'on production') return 'On Production';
+  if (normalized === 'testing') return 'Testing';
+  if (normalized === 'standby') return 'Standby';
+  if (normalized === 'mothball' || normalized === 'moth ball') return 'Mothball';
+  if (normalized === 'shut-in' || normalized === 'shut in') return 'Shut-in';
+  if (normalized.includes('locked')) return 'Locked Potential';
+  return String(status || '').trim() || 'Unknown';
+}
+
+function isProducingStatus(status) {
+  const normalized = normalizeProductionStatus(status);
+  return normalized === 'On Production' || normalized === 'Testing';
+}
+
+function isNonProducingStatus(status) {
+  return !isProducingStatus(status);
+}
+
+function interpretDNWorkflowStatus(statusText) {
+  const s = String(statusText || '').toLowerCase().trim();
+  if (!s) return 'Open';
+  if (s.includes('closed')) return 'Closed';
+  if (s.includes('completed')) return 'Completed';
+  if (
+    s.includes('not issuing') ||
+    s.includes('waiting')
+  ) {
+    return 'Waiting';
+  }
+  if (
+    s.includes('under rfi') ||
+    s.includes('depressurizing') ||
+    s.includes('execution started') ||
+    s.includes('execution') ||
+    s.includes('package ready') ||
+    s.includes('engineering review') ||
+    s.includes('inspection') ||
+    s.includes('review')
+  ) {
+    return 'In Progress';
+  }
+  return 'Open';
+}
+
+function interpretDNCurrentStep(statusText) {
+  const s = String(statusText || '').toLowerCase().trim();
+  if (!s) return 'Field Review';
+  if (s.includes('closed')) return 'Closeout';
+  if (s.includes('completed')) return 'Execution';
+  if (s.includes('depressurizing') || s.includes('execution started') || s.includes('execution')) {
+    return 'Execution';
+  }
+  if (s.includes('under inspection') || s.includes('inspection')) {
+    return 'Execution';
+  }
+  if (s.includes('under rfi')) return 'RFI';
+  if (
+    s.includes('not issuing package') ||
+    s.includes('dn not issuing') ||
+    s.includes('foeu not issuing package') ||
+    s.includes('not issuing') ||
+    s.includes('package ready') ||
+    s.includes('waiting crd execution') ||
+    s.includes('waiting cfc execution')
+  ) {
+    return 'Package Preparation';
+  }
+  if (s.includes('engineering review') || s.includes('review')) {
+    return 'Field Review';
+  }
+  return 'Field Review';
+}
+
+function isDNResolvedStatus(statusText) {
+  const workflowStatus = interpretDNWorkflowStatus(statusText);
+  return workflowStatus === 'Closed' || workflowStatus === 'Completed';
+}
+
+function compareDNLogRows(a, b) {
+  const aTime = new Date(a?.update_date || 0).getTime();
+  const bTime = new Date(b?.update_date || 0).getTime();
+
+  const safeATime = Number.isNaN(aTime) ? -Infinity : aTime;
+  const safeBTime = Number.isNaN(bTime) ? -Infinity : bTime;
+
+  if (safeATime !== safeBTime) {
+    return safeATime - safeBTime;
+  }
+
+  const aPriority = DN_WORKFLOW_PRIORITY[interpretDNWorkflowStatus(a?.status_update || a?.dn_status || a?.status)] ?? -1;
+  const bPriority = DN_WORKFLOW_PRIORITY[interpretDNWorkflowStatus(b?.status_update || b?.dn_status || b?.status)] ?? -1;
+
+  if (aPriority !== bPriority) {
+    return aPriority - bPriority;
+  }
+
+  const aOwner = String(a?.updated_by || '').trim();
+  const bOwner = String(b?.updated_by || '').trim();
+  if (aOwner !== bOwner) {
+    return aOwner.localeCompare(bOwner);
+  }
+
+  const aStatus = String(a?.status_update || a?.dn_status || a?.status || '').trim();
+  const bStatus = String(b?.status_update || b?.dn_status || b?.status || '').trim();
+  return aStatus.localeCompare(bStatus);
+}
+
 class Well {
   constructor(data) {
     this.well_id = data.well_id || data.id || '';
@@ -35,38 +168,30 @@ class Well {
     this.well_name = String(data.well_name || data.name || '').trim();
     this.name = this.well_name;
     this.field = data.field || '';
-    this.production_status = data.production_status || 'Unknown';
+    this.production_status = normalizeProductionStatus(data.production_status);
     this.oil_rate_bopd = Number(data.oil_rate_bopd || 0);
     this.oil_rate = this.oil_rate_bopd;
     this.last_updated = data.last_updated || '';
-    this.field_code = data.field_code || this._extractFieldCode();
+    this.field_code = normalizeFieldCode(data.field_code, this.well_name, this.field);
     this.is_active = String(this.production_status || '').toLowerCase() !== 'shut-in';
     this.metadata = { ...data };
   }
 
   _extractFieldCode() {
-    const name = String(this.well_name || '').toUpperCase().trim();
-    if (name.startsWith('ANDR-')) return 'ANDR';
-    if (name.startsWith('ABQQ-')) return 'ABQQ';
-    const fieldName = String(this.field || '').toLowerCase().trim();
-    if (fieldName === 'ain dar') return 'ANDR';
-    if (fieldName === 'abqaiq') return 'ABQQ';
-    return '';
+    return normalizeFieldCode('', this.well_name, this.field);
   }
 
   isProducing() {
-    const status = String(this.production_status || '').toLowerCase();
-    return status === 'on production' || status === 'testing';
+    return isProducingStatus(this.production_status);
   }
 
   isActive() {
-    const status = String(this.production_status || '').toLowerCase();
+    const status = normalizeProductionStatus(this.production_status).toLowerCase();
     return status !== 'shut-in' && status !== 'shut in';
   }
 
   isPotentiallyLocked() {
-    const status = String(this.production_status || '').toLowerCase();
-    return status.includes('locked');
+    return normalizeProductionStatus(this.production_status) === 'Locked Potential';
   }
 
   getFieldCode() {
@@ -115,35 +240,20 @@ class DN {
     this.update_date = data.update_date || '';
     this.workflow_status = this._interpretWorkflowStatus();
     this.current_step = data.current_step || this._interpretCurrentStep();
-    this.is_closed = this.workflow_status === 'Closed';
+    this.is_closed = isDNResolvedStatus(this.dn_status);
     this.metadata = { ...data };
   }
 
   _interpretWorkflowStatus(statusText = this.dn_status) {
-    const s = String(statusText || '').toLowerCase().trim();
-    if (!s) return 'Open';
-    if (s.includes('closed')) return 'Closed';
-    if (s.includes('completed')) return 'Completed';
-    if (s.includes('not issuing')) return 'Waiting';
-    if (s.includes('under rfi')) return 'In Progress';
-    if (s.includes('depressurizing')) return 'In Progress';
-    return 'In Progress';
+    return interpretDNWorkflowStatus(statusText);
   }
 
   _interpretCurrentStep(statusText = this.dn_status) {
-    const s = String(statusText || '').toLowerCase().trim();
-    if (s.includes('not issuing package')) return 'Package Preparation';
-    if (s.includes('dn not issuing')) return 'Package Preparation';
-    if (s.includes('not issuing')) return 'Package Preparation';
-    if (s.includes('under rfi')) return 'RFI';
-    if (s.includes('depressurizing')) return 'Execution';
-    if (s.includes('completed')) return 'Execution';
-    return 'Field Review';
+    return interpretDNCurrentStep(statusText);
   }
 
   isClosed() {
-    const status = String(this.dn_status || '').toLowerCase();
-    return status.includes('closed');
+    return isDNResolvedStatus(this.dn_status);
   }
 
   isActive() {
@@ -221,5 +331,13 @@ module.exports = {
   DN,
   PRODUCTION_STATUS,
   WORKFLOW_PHASES,
-  DN_TYPES
+  DN_TYPES,
+  normalizeFieldCode,
+  normalizeProductionStatus,
+  isProducingStatus,
+  isNonProducingStatus,
+  interpretDNWorkflowStatus,
+  interpretDNCurrentStep,
+  isDNResolvedStatus,
+  compareDNLogRows
 };
